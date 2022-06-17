@@ -114,6 +114,11 @@ body::-webkit-scrollbar {
     opacity: 1;
 }
 
+.sidebar__button {
+    width: 25px;
+    font-weight: 900;
+}
+
 .sidebar__selector {
     cursor: pointer;
 }

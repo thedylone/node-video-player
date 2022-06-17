@@ -3,6 +3,10 @@ const bodyParser = require('body-parser');
 const jsonfile = require('jsonfile');
 const fs = require('fs');
 const fsp = require('fs').promises;
+const ejs = require('ejs');
+
+ejs.openDelimiter = '[';
+ejs.closeDelimiter = ']';
 
 // environment variables
 require('dotenv').config();

@@ -14,47 +14,46 @@
 </head>
 
 <body spellcheck="false">
-  <%- include('partials/header'); -%>
-    <div class="sidebar">
-      <div class="sidebar__filterwrapper">
-        <% if (data) for (var source of [...new Set(Object.values(data).map(x=> x.source))]) { %>
-          <label class="sidebar__filter__list--item" onclick="filterSource()">
-            <input type="checkbox" value="<%=source %>" <% if (filter && filter.includes(source)) { %> checked <% } %> >
-              <span class="sidebar__filter__list--check"></span>
-              <%=source %>
-          </label>
-          <% } %>
+  [%- include('partials/header'); -%]
+  <div class="sidebar">
+    <div class="sidebar__filterwrapper">
+      [% if (data) for (var source of [...new Set(Object.values(data).map(x=> x.source))]) { %]
+      <label class="sidebar__filter__list--item" onclick="filterSource()">
+        <input type="checkbox" value="[%= source %]" [% if (filter && filter.includes(source)) { %] checked [% } %]>
+        <span class="sidebar__filter__list--check"></span>
+        [%= source %]
+      </label>
+      [% } %]
+    </div>
+  </div>
+  <div class="contents-container">
+    [% if (data) { for (var title in data) { if (!filter || filter.includes(data[title].source)) { %]
+    <div class="video-container">
+      <a class="video-container__thumbnail" href="[%= encodeURI('/watch?title='+title) %]">
+        <video class="video-container__thumbnail--video" muted preload="none"></video>
+      </a>
+      <a class="video-container__title" href="[%= encodeURI('/watch?title='+title) %]">
+        [%= title %]
+      </a>
+      <div class="video-container__subtitle">
+        <div class="video-container__subtitle--source">
+          [%= data[title].source %]
+        </div>
+        <div class="video-container__subtitle--counter">
+          [%= data[title].counter %]
+        </div>
+      </div>
+      <div class="video-container__tags">
+        tags:
+        [% for (var tag of data[title].tags) { %]
+        <button class="video-container__tags--tag">
+          [%= tag %]
+        </button>
+        [% } %]
       </div>
     </div>
-    <div class="contents-container">
-      <% if (data) { for (var title in data) { if (!filter || filter.includes(data[title].source)) { %>
-        <div class="video-container">
-          <a class="video-container__thumbnail" href= <%=encodeURI("/watch?title="+title) %> >
-            <video class="video-container__thumbnail--video" muted preload="none"></video>
-          </a>
-          <a class="video-container__title" href= <%=encodeURI("/watch?title="+title) %> >
-            <%=title %>
-          </a>
-          <div class="video-container__subtitle">
-            <div class="video-container__subtitle--source">
-              <%=data[title].source %>
-            </div>
-            <div class="video-container__subtitle--counter">
-              <%=data[title].counter %>
-            </div>
-          </div>
-          <div class="video-container__tags">
-            tags:
-            <% for (var tag of data[title].tags) { %>
-              <button class="video-container__tags--tag">
-                <%=tag %>
-              </button>
-              <% } %>
-          </div>
-        </div>
-        <% } } } %>
-
-    </div>
+    [% } } } %]
+  </div>
 </body>
 <script>
 </script>
