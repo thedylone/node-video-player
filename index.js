@@ -88,7 +88,22 @@ async function updateDB() {
 }
 
 /**
- * renders the main page.
+ * adds to the database's title's counter.
+ * writes the database to the database file.
+ * returns the new counter.
+ * @param {string} title the title of the video
+ * @param {int} num the value to add to the counter
+ * @return {int} the new counter
+ */
+async function addCount(title, num) {
+    database[title].counter += parseInt(num);
+    jsonfile.writeFile(DB_FILE, database)
+        .then((res) => console.log('write complete'));
+    return database[title].counter;
+}
+
+/**
+ * GET renders the main page.
  * filter query is used to filter the videos by source.
  * filter is handled by the ejs template.
  * access by /?filter=<source>
@@ -111,7 +126,7 @@ app.get('/', [urlencodedParser], (req, res) => {
 });
 
 /**
- * 'watch' path handler with query of title.
+ * GET 'watch' path handler with query of title.
  * renders the watch page with the information from the database.
  * access by /watch?title=<title>
 */
@@ -121,7 +136,7 @@ app.get('/watch', [urlencodedParser], (req, res) => {
 });
 
 /**
- * 'video' path handler with query of title and index.
+ * GET 'video' path handler with query of title and index.
  * returns video file data.
  * access by /video?title=<title>&index=<index>
  */
@@ -174,6 +189,35 @@ app.get('/video', [urlencodedParser], (req, res) => {
         res.writeHead(200, head);
         fs.createReadStream(videoPath).pipe(res);
     }
+});
+
+/**
+ * POST 'count' path handler. adds to the database's title's counter.
+ * returns the new counter.
+ * access by /count with body of {title: <title>, num: <num>}
+ */
+app.post('/count', [urlencodedParser], (req, res) => {
+    let title;
+    let num;
+    try {
+        title = req.body.title;
+        num = req.body.num;
+    } catch (error) {
+        console.log(error);
+    }
+    if (!title || !num) {
+        res.status(400).send('400 Bad Request');
+        return;
+    }
+    addCount(title, num)
+        .then((count) => {
+            res.writeHead(200, {'Content-Type': 'text/plain'});
+            res.end(count.toString());
+        })
+        .catch((error) => {
+            console.log(error);
+            res.status(500).send('500 Internal Server Error');
+        });
 });
 
 app.listen(PORT_NUMBER);
