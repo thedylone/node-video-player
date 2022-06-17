@@ -10,7 +10,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
     <link rel="manifest" href="favicon/site.webmanifest">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <!-- <script type="text/javascript" src="main.js"></script> -->
+    <script type="text/javascript" src="js/main.js"></script>
 </head>
 
 <body spellcheck="false">
@@ -28,9 +28,9 @@
                     <button class="sidebar__button--adder" style="width: 25px; font-weight: 900;">+</button>
                     <button class="sidebar__button--deleter" style="width: 25px; font-weight: 900;">&times</button>
                 </div>
-                <% for (const vid of data.vids) { %>
-                    <div class="sidebar__selector">
-                        <%=vid %>
+                <% for (let index = 0; index < data.vids.length; index++) { %>
+                    <div class="sidebar__selector" onclick="setSource('<%=title%>', <%= index %>)">
+                        <%=data.vids[index] %>
                     </div>
                 <%}%>
                 <div class="sidebar__tagcontainer">
