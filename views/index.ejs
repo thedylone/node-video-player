@@ -5,10 +5,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="css/style.css" type="text/css">
-  <link rel="apple-touch-icon" sizes="180x180" href="./favicon/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
-  <link rel="manifest" href="/favicon/site.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+  <link rel="manifest" href="favicon/site.webmanifest">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
   <!-- <script type="text/javascript" src="main.js"></script> -->
 </head>
@@ -27,25 +27,25 @@
       </div>
     </div>
     <div class="contents-container">
-      <% if (data) { for (var key in data) { if (!filter || filter.includes(data[key].source)) { %>
+      <% if (data) { for (var title in data) { if (!filter || filter.includes(data[title].source)) { %>
         <div class="video-container">
-          <a class="video-container__thumbnail">
+          <a class="video-container__thumbnail" href= <%=encodeURI("/watch?title="+title) %> >
             <video class="video-container__thumbnail--video" muted preload="none"></video>
           </a>
-          <a class="video-container__title">
-            <%=key %>
+          <a class="video-container__title" href= <%=encodeURI("/watch?title="+title) %> >
+            <%=title %>
           </a>
           <div class="video-container__subtitle">
             <div class="video-container__subtitle--source">
-              <%=data[key].source %>
+              <%=data[title].source %>
             </div>
             <div class="video-container__subtitle--counter">
-              <%=data[key].counter %>
+              <%=data[title].counter %>
             </div>
           </div>
           <div class="video-container__tags">
             tags:
-            <% for (var tag of data[key].tags) { %>
+            <% for (var tag of data[title].tags) { %>
               <button class="video-container__tags--tag">
                 <%=tag %>
               </button>

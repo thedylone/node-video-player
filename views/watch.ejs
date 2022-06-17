@@ -1,0 +1,60 @@
+<!doctype html>
+
+<head>
+    <title>main</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <!-- <script type="text/javascript" src="main.js"></script> -->
+</head>
+
+<body spellcheck="false">
+    <%- include('partials/header'); -%>
+        <% if (data) { %>
+            <div class="sidebar">
+                <div class="sidebar__title">
+                    <%=title %>
+                </div>
+                <div class="sidebar__button">
+                    <button class="sidebar__button--adder" style="width: 25px; font-weight: 900;">-</button>
+                    <span id="count">
+                        count: <%=data.counter %>
+                    </span>
+                    <button class="sidebar__button--adder" style="width: 25px; font-weight: 900;">+</button>
+                    <button class="sidebar__button--deleter" style="width: 25px; font-weight: 900;">&times</button>
+                </div>
+                <% for (const vid of data.vids) { %>
+                    <div class="sidebar__selector">
+                        <%=vid %>
+                    </div>
+                <%}%>
+                <div class="sidebar__tagcontainer">
+                    <div class="sidebar__tagdisplay">
+                        <% for (const tag of data.tags) { %>
+                            <button class="sidebar__tagdisplay--button">
+                                <span class="sidebar__tagdisplay--tag" contenteditable="true">
+                                    <%=tag %>
+                                </span>
+                                <span class="sidebar__tagdisplay--deleter">&times</span>
+                            </button>
+                            <%}%>
+                    </div>
+                    <div class="sidebar__tagadder">
+                        <button class="sidebar__tagadder--adder">+</button>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+                <div class="video-frame">
+                    <video class="video-frame__video" preload="metadata" controls></video>
+                </div>
+</body>
+<script>
+</script>
+
+</html>

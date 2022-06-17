@@ -114,6 +114,34 @@ body::-webkit-scrollbar {
     opacity: 1;
 }
 
+.sidebar__selector {
+    cursor: pointer;
+}
+
+.sidebar__tagdisplay--tag {
+    color: #333333;
+    min-width: 15px;
+    max-width: 150px;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar__tagdisplay--deleter {
+    margin-left: 5px;
+    color: #888;
+    font-weight: bold;
+    float: right;
+}
+
+.sidebar__tagadder--adder {
+    height: 25px;
+    width: 25px;
+    border-radius: 50%;
+    padding: 0;
+    font-weight: 900;
+}
+
 .contents-container {
     display: flex;
     flex-wrap: wrap;
@@ -174,6 +202,19 @@ body::-webkit-scrollbar {
     text-align: right;
 }
 
+.video-frame {
+    margin-top: var(--header-height);
+    margin-right: var(--sidebar-width);
+    text-align: center;
+    max-width: calc(100% - var(--sidebar-width));
+    max-height: calc(100vh - var(--header-height));
+}
+
+.video-frame__video {
+    max-height: calc(99vh - var(--header-height));
+    margin: auto;
+}
+
 button {
     background-color: #a8a8a8;
     border-radius: 8px;
@@ -184,7 +225,7 @@ button {
     font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 14px;
     list-style: none;
-    margin: 0 5px;
+    margin: 5px;
     padding: 5px;
     text-align: center;
     transition: all 200ms;
