@@ -1,0 +1,62 @@
+<!doctype html>
+
+<head>
+  <title>main</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/style.css" type="text/css">
+  <link rel="apple-touch-icon" sizes="180x180" href="./favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+  <link rel="manifest" href="/favicon/site.webmanifest">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <!-- <script type="text/javascript" src="main.js"></script> -->
+</head>
+
+<body spellcheck="false">
+  <%- include('partials/header'); -%>
+    <div class="sidebar">
+      <div class="sidebar__filterwrapper">
+        <% if (data) for (var source of [...new Set(Object.values(data).map(x=> x.source))]) { %>
+          <label class="sidebar__filter__list--item">
+            <input type="checkbox" value="<%=source %>" <% if (filter && filter.includes(source)) { %> checked <% } %> >
+              <span class="sidebar__filter__list--check"></span>
+              <%=source %>
+          </label>
+          <% } %>
+      </div>
+    </div>
+    <div class="contents-container">
+      <% if (data) { for (var key in data) { if (!filter || filter.includes(data[key].source)) { %>
+        <div class="video-container">
+          <a class="video-container__thumbnail">
+            <video class="video-container__thumbnail--video" muted preload="none"></video>
+          </a>
+          <a class="video-container__title">
+            <%=key %>
+          </a>
+          <div class="video-container__subtitle">
+            <div class="video-container__subtitle--source">
+              <%=data[key].source %>
+            </div>
+            <div class="video-container__subtitle--counter">
+              <%=data[key].counter %>
+            </div>
+          </div>
+          <div class="video-container__tags">
+            tags:
+            <% for (var tag of data[key].tags) { %>
+              <button class="video-container__tags--tag">
+                <%=tag %>
+              </button>
+              <% } %>
+          </div>
+        </div>
+        <% } } } %>
+
+    </div>
+</body>
+<script>
+</script>
+
+</html>
