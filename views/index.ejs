@@ -10,7 +10,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
   <link rel="manifest" href="favicon/site.webmanifest">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-  <!-- <script type="text/javascript" src="main.js"></script> -->
+  <script type="text/javascript" src="js/main.js"></script>
 </head>
 
 <body spellcheck="false">
@@ -18,7 +18,7 @@
     <div class="sidebar">
       <div class="sidebar__filterwrapper">
         <% if (data) for (var source of [...new Set(Object.values(data).map(x=> x.source))]) { %>
-          <label class="sidebar__filter__list--item">
+          <label class="sidebar__filter__list--item" onclick="filterSource()">
             <input type="checkbox" value="<%=source %>" <% if (filter && filter.includes(source)) { %> checked <% } %> >
               <span class="sidebar__filter__list--check"></span>
               <%=source %>
