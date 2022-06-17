@@ -99,4 +99,13 @@ app.get('/', [urlencodedParser], (req, res) => {
         ).catch((error) => console.log(error));
 });
 
+/**
+ * 'watch' path handler with query of title.
+ * access by /watch?title=<title>
+*/
+app.get('/watch', [urlencodedParser], (req, res) => {
+    const title = req.query.title;
+    res.render('watch', {title: title, data: database[title]});
+});
+
 app.listen(PORT_NUMBER);
