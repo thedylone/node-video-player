@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * retrieves selected filters and sets them to the url.
  */
@@ -31,3 +32,14 @@ function addCounter(title, num) {
         $('.sidebar__counter').text(`count: ${data}`);
     });
 };
+
+/**
+ * sends a POST request to delete the title from storage.
+ * redirects back to index after success.
+ * @param {string} title the title of the video.
+ */
+function deleteTitle(title) {
+    $.post('/delete', {title: title}, (data) => {
+        window.location.replace('/');
+    });
+}

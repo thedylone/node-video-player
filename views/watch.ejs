@@ -15,7 +15,7 @@
                 count: [%= data.counter %]
             </span>
             <button class="sidebar__button sidebar__button--adder" [%= `onclick=addCounter('${title}',1)` %]>+</button>
-            <button class="sidebar__button sidebar__button--deleter">&times</button>
+            <button class="sidebar__button sidebar__button--deleter" [%= `onclick=deleteTitle('${title}')` %]>&times</button>
         </div>
         [% for (let index = 0; index < data.vids.length; index++) { %] 
         <div class="sidebar__selector" [%= `onclick=setSource('${title}',${index})` %]>
