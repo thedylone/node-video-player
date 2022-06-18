@@ -243,6 +243,11 @@ app.post('/count', [urlencodedParser], (req, res) => {
         });
 });
 
+/**
+ * POST 'delete' path handler. deletes title and its videos from the directory.
+ * returns true if successful, false otherwise.
+ * access by /delete with body of {title: <title>}
+ */
 app.post('/delete', [urlencodedParser], (req, res) => {
     let title;
     try {
