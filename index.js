@@ -117,12 +117,29 @@ async function deleteTitle(title) {
             return false;
         } else {
             delete database[title];
-            console.log(database);
             return true;
         }
     });
     if (success == undefined) return true;
     return false;
+}
+
+/**
+ * updates the database with the new tags.
+ * @param {string} title the title of the video
+ * @param {string[]} tags the tags of the video
+ * @return {boolean} true if successful, false otherwise
+ */
+async function updateTags(title, tags) {
+    database[title].tags = tags;
+    return jsonfile.writeFile(DB_FILE, database)
+        .then((res) => {
+            console.log('write complete');
+            return true;
+        }, (error) => {
+            console.log(error);
+            return false;
+        });
 }
 
 /**
@@ -268,6 +285,42 @@ app.post('/delete', [urlencodedParser], (req, res) => {
             }
         }).catch((error) => {
             console.log('/delete catch: ' + error);
+            res.status(500).send('500 Internal Server Error');
+        });
+});
+
+/**
+ * POST 'tags' path handler. updates the database's title's tags.
+ * returns true if successful, false otherwise.
+ * access by /tags with body of {title: <title>, tags: <tags>}
+ */
+app.post('/tags', [urlencodedParser], (req, res) => {
+    let title;
+    let tags;
+    try {
+        title = req.body.title;
+        tags = req.body['tags[]'];
+        if (tags && !Array.isArray(tags)) {
+            tags = [tags];
+        } else if (!tags) {
+            tags = [];
+        }
+    } catch (error) {
+        console.log(error);
+    }
+    if (!title || !tags) {
+        res.status(400).send('400 Bad Request');
+        return;
+    }
+    updateTags(title, tags)
+        .then((success) => {
+            if (success) {
+                res.status(200).send('200 OK');
+            } else {
+                res.status(500).send('500 Internal Server Error');
+            }
+        }).catch((error) => {
+            console.log('/tags catch: ' + error);
             res.status(500).send('500 Internal Server Error');
         });
 });
