@@ -77,7 +77,7 @@ async function updateDB() {
     }
     if (allFiles.length > 0) {
         for (const title of Object.keys(database)) {
-            if (!allFiles.includes(title)) delete DB[title];
+            if (!allFiles.includes(title)) delete database[title];
         }
     }
     jsonfile.writeFile(DB_FILE, database)
@@ -100,6 +100,29 @@ async function addCount(title, num) {
     jsonfile.writeFile(DB_FILE, database)
         .then((res) => console.log('write complete'));
     return database[title].counter;
+}
+
+/**
+ * removes title and its videos from the directory.
+ * @param {string} title the title of the video
+ * @return {boolean} true if successful, false otherwise
+ */
+async function deleteTitle(title) {
+    const source = database[title].source;
+    const success = await fsp.rm([DIRECTORY, source, title].join('/'), {
+        recursive: true,
+    }, (error) => {
+        if (error) {
+            console.log('deleteTitle: ' + error);
+            return false;
+        } else {
+            delete database[title];
+            console.log(database);
+            return true;
+        }
+    });
+    if (success == undefined) return true;
+    return false;
 }
 
 /**
@@ -220,4 +243,29 @@ app.post('/count', [urlencodedParser], (req, res) => {
         });
 });
 
+app.post('/delete', [urlencodedParser], (req, res) => {
+    let title;
+    try {
+        title = req.body.title;
+    } catch (error) {
+        console.log(error);
+    }
+    if (!title) {
+        res.status(400).send('400 Bad Request');
+        return;
+    }
+    deleteTitle(title)
+        .then((success) => {
+            if (success) {
+                res.status(200).send('200 OK');
+            } else {
+                res.status(500).send('500 Internal Server Error');
+            }
+        }).catch((error) => {
+            console.log('/delete catch: ' + error);
+            res.status(500).send('500 Internal Server Error');
+        });
+});
+
+updateDB();
 app.listen(PORT_NUMBER);
