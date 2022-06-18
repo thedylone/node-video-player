@@ -128,3 +128,46 @@ function deleterOnclick(title) {
         confirmParams: {title: title},
     });
 }
+
+/**
+ * pushes all tags values into a list and POST it to the server.
+ * @param {string} title the title of the video.
+ */
+function updateTags(title) {
+    const tags = [];
+    $.each($('.sidebar__tagdisplay--tag'), (index, tag) => {
+        tags.push($.trim($(tag).text()));
+    });
+    console.log(tags);
+    $.post('/tags', {title: title, tags: tags.sort()}, (data) => {
+        console.log(data);
+    });
+}
+
+/**
+ * create an empty tag and append it to the tagdisplay.
+ * @param {string} title the title of the video.
+ */
+function createTag(title) {
+    const button = $(`<button class="sidebar__tagdisplay--button">
+    <span class="sidebar__tagdisplay--tag" contenteditable="true"
+    onblur=updateTags('${title}')>
+    </span>
+    <span class="sidebar__tagdisplay--deleter"
+    onclick=removeTag($(this).parent(),'${title}')>
+    &times
+    </span>
+    </button>`);
+    button.appendTo($('.sidebar__tagdisplay'));
+}
+
+/**
+ * removes the specified button from the tagdisplay.
+ * updates the tags on the server.
+ * @param {button} tag the button for the tag to delete.
+ * @param {string} title the title of the video.
+ */
+function removeTag(tag, title) {
+    $(tag).remove();
+    updateTags(title);
+}

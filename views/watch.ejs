@@ -26,15 +26,15 @@
             <div class="sidebar__tagdisplay">
                 [% for (const tag of data.tags) { %]
                 <button class="sidebar__tagdisplay--button">
-                    <span class="sidebar__tagdisplay--tag" contenteditable="true">
+                    <span class="sidebar__tagdisplay--tag" contenteditable="true" [%= `onblur=updateTags('${title}')` %]>
                         [%= tag %]
                     </span>
-                    <span class="sidebar__tagdisplay--deleter">&times</span>
+                    <span class="sidebar__tagdisplay--deleter" [%= `onclick=removeTag($(this).parent(),'${title}')` %]>&times</span>
                 </button>
                 [% } %]
             </div>
             <div class="sidebar__tagadder">
-                <button class="sidebar__tagadder--adder">+</button>
+                <button class="sidebar__tagadder--adder" [%= `onclick=createTag('${title}')` %]>+</button>
             </div>
         </div>
     </div>
