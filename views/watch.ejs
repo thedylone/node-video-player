@@ -15,7 +15,7 @@
                 count: [%= data.counter %]
             </span>
             <button class="sidebar__button sidebar__button--adder" [%= `onclick=addCounter('${title}',1)` %]>+</button>
-            <button class="sidebar__button sidebar__button--deleter" [%= `onclick=deleteTitle('${title}')` %]>&times</button>
+            <button class="sidebar__button sidebar__button--deleter" [%= `onclick=deleterOnclick('${title}')` %]>&times</button>
         </div>
         [% for (let index = 0; index < data.vids.length; index++) { %] 
         <div class="sidebar__selector" [%= `onclick=setSource('${title}',${index})` %]>
@@ -42,6 +42,24 @@
     <div class="video-frame">
         <video class="video-frame__video" src="[%= encodeURI('/video?title='+title+'&index=0') %]" preload="metadata"
             controls></video>
+    </div>
+    <div class="modal-wrapper">
+        <div class="modal-content">
+            <div class="modal-content__title">
+                <span class="modal-content__title--text">Alert</span>
+            </div>
+            <div class="modal-content__text">
+                <span class="modal-content__text--text"></span>
+            </div>
+            <div class="modal-content__buttonwrapper">
+                <div class="modal-content__button modal-content__button--cancel">
+                    <span class="modal-content__button--text">Cancel</span>
+                </div>
+                <div class="modal-content__button modal-content__button--confirm">
+                    <span class="modal-content__button--text">Confirm</span>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 <script>
