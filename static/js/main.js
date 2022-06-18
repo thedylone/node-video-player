@@ -35,12 +35,18 @@ function addCounter(title, num) {
 
 /**
  * sends a POST request to delete the title from storage.
- * redirects back to index after success.
+ * on success, show success modal and redirect to index after 3 seconds.
  * @param {string} title the title of the video.
  */
 function deleteTitle(title) {
     $.post('/delete', {title: title}, (data) => {
-        window.location.replace('/');
+        showModal({
+            title: 'success',
+            text: 'video deleted. redirecting back to index in 3 seconds...',
+            showCancel: false,
+            showConfirm: false,
+        });
+        setTimeout(() => window.location.replace('/'), 3000);
     });
 }
 
