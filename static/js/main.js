@@ -20,3 +20,14 @@ function setSource(title, index) {
     const video = $('.video-frame__video');
     if ($(video).attr('src') !== path) $(video).attr('src', path);
 }
+
+/**
+ * sends a POST request to add title's counter by specified number.
+ * @param {string} title the title of the video.
+ * @param {int} num the number to add to the counter.
+ */
+function addCounter(title, num) {
+    $.post('/count', {title: title, num: num}, (data) => {
+        $('.sidebar__counter').text(`count: ${data}`);
+    });
+};

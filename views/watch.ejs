@@ -10,11 +10,11 @@
             [%= title %]
         </div>
         <div class="sidebar__buttonwrapper">
-            <button class="sidebar__button sidebar__button--adder">-</button>
-            <span id="count">
+            <button class="sidebar__button sidebar__button--adder" [%= `onclick=addCounter('${title}',-1)` %]>-</button>
+            <span class="sidebar__counter">
                 count: [%= data.counter %]
             </span>
-            <button class="sidebar__button sidebar__button--adder">+</button>
+            <button class="sidebar__button sidebar__button--adder" [%= `onclick=addCounter('${title}',1)` %]>+</button>
             <button class="sidebar__button sidebar__button--deleter">&times</button>
         </div>
         [% for (let index = 0; index < data.vids.length; index++) { %] 
