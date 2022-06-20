@@ -19,7 +19,7 @@
     [% if (data) { for (var title in data) { if (!filter || filter.includes(data[title].source)) { %]
     <div class="video-container">
       <a class="video-container__thumbnail" href="[%= encodeURI('/watch?title='+title) %]">
-        <video class="video-container__thumbnail--video" muted preload="none"></video>
+        <video class="video-container__thumbnail--video" muted preload="none" data-path="[%= title %]" onmouseenter="showPreview($(this))" onmouseleave="stopPreview($(this))"></video>
       </a>
       <a class="video-container__title" href="[%= encodeURI('/watch?title='+title) %]">
         [%= title %]

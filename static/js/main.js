@@ -171,3 +171,25 @@ function removeTag(tag, title) {
     $(tag).remove();
     updateTags(title);
 }
+
+/**
+ * sets the source of the video to preview for 10 seconds.
+ * @param {video} video the video element.
+ */
+function showPreview(video) {
+    const path = '/video?title=' + $(video).data('path') + '&index=0';
+    $(video).attr('src', path);
+    $(video).trigger('play').on('error', () => { });
+    setTimeout(() => {
+        if ($(video).attr('src')) stopPreview(video);
+    }, 10000);
+}
+
+/**
+ * stops the video preview.
+ * @param {video} video the video element.
+ */
+function stopPreview(video) {
+    $(video).attr('src', '');
+    $(video).trigger('pause').on('error', () => { });
+}
