@@ -1,5 +1,19 @@
 /* eslint-disable no-unused-vars */
 /**
+ * toggle sidebar visibility.
+ */
+function toggleSidebar() {
+    const sidebar = $('.sidebar');
+    if (sidebar.css('margin-right') != '0px') {
+        sidebar.css('width', 'var(--sidebar-width-l)');
+        sidebar.css('margin-right', '0px');
+    } else {
+        sidebar.css('width', '');
+        sidebar.css('margin-right', '');
+    }
+}
+
+/**
  * retrieves selected filters and sets them to the url.
  */
 function filterSource() {

@@ -1,6 +1,8 @@
 :root {
     --header-height: 80px;
-    --sidebar-width: 240px;
+    --sidebar-width-l: 240px;
+    --sidebar-width-m: 120px;
+    --sidebar-width: var(--sidebar-width-l);
     --video-columns: 4;
 }
 
@@ -43,9 +45,29 @@ body::-webkit-scrollbar {
     left: 0;
 }
 
+.header__logo {
+    float: left;
+}
+
 .header__logoimage {
     height: var(--header-height);
     width: auto;
+}
+
+.header__sidebarbutton {
+    display: none;
+    position: absolute;
+    float: right;
+    right: 0px;
+    padding: 0 15px;
+    height: var(--header-height);
+    align-items: center;
+    background: #202020;
+}
+
+.header__sidebarbuttontext {
+    font-size: 1.5em;
+    cursor: pointer;
 }
 
 .sidebar {
@@ -58,6 +80,7 @@ body::-webkit-scrollbar {
     background: #212121;
     text-align: center;
     overflow-wrap: break-word;
+    overflow-x: hidden;
     overflow-y: scroll;
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -302,24 +325,28 @@ button:hover {
 
 @media screen and (max-width:1200px) {
     :root {
-        --header-height: 80px;
-        --sidebar-width: 120px;
+        --sidebar-width: var(--sidebar-width-m);
         --video-columns: 3;
     }
 }
 
 @media screen and (max-width:900px) {
     :root {
-        --header-height: 60px;
         --sidebar-width: 0;
         --video-columns: 2;
+    }
+
+    .sidebar {
+        margin-right: calc(-1 * var(--sidebar-width-l));
+    }
+
+    .header__sidebarbutton {
+        display: flex;
     }
 }
 
 @media screen and (max-width:600px) {
     :root {
-        --header-height: 40px;
-        --sidebar-width: 0;
         --video-columns: 1;
     }
 }
