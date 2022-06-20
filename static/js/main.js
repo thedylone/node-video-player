@@ -172,17 +172,23 @@ function removeTag(tag, title) {
     updateTags(title);
 }
 
+let showPreviewTimeout;
+let stopPreviewTimeout;
+
 /**
+ * after hovering over for 1 second,
  * sets the source of the video to preview for 10 seconds.
  * @param {video} video the video element.
  */
 function showPreview(video) {
-    const path = '/video?title=' + $(video).data('path') + '&index=0';
-    $(video).attr('src', path);
-    $(video).trigger('play').on('error', () => { });
-    setTimeout(() => {
-        if ($(video).attr('src')) stopPreview(video);
-    }, 10000);
+    showPreviewTimeout = setTimeout(() => {
+        const path = '/video?title=' + $(video).data('path') + '&index=0';
+        $(video).attr('src', path);
+        $(video).trigger('play').on('error', () => { });
+        stopPreviewTimeout = setTimeout(() => {
+            if ($(video).attr('src')) stopPreview(video);
+        }, 10000);
+    }, 1000);
 }
 
 /**
@@ -190,6 +196,10 @@ function showPreview(video) {
  * @param {video} video the video element.
  */
 function stopPreview(video) {
+    clearTimeout(showPreviewTimeout);
+    clearTimeout(stopPreviewTimeout);
+    // $(video).removeAttr('src');
     $(video).attr('src', '');
+    $(video).prop('currentTime', 0);
     $(video).trigger('pause').on('error', () => { });
 }
