@@ -10,15 +10,15 @@
             [%= title %]
         </div>
         <div class="sidebar__buttonwrapper">
-            <button class="sidebar__button sidebar__button--adder" [%= `onclick=addCounter('${title}',-1)` %]>-</button>
+            <button class="sidebar__button sidebar__button--adder" onclick="addCounter(-1)">-</button>
             <span class="sidebar__counter">
                 count: [%= data.counter %]
             </span>
-            <button class="sidebar__button sidebar__button--adder" [%= `onclick=addCounter('${title}',1)` %]>+</button>
-            <button class="sidebar__button sidebar__button--deleter" [%= `onclick=deleterOnclick('${title}')` %]>&times</button>
+            <button class="sidebar__button sidebar__button--adder" onclick="addCounter(1)"">+</button>
+            <button class="sidebar__button sidebar__button--deleter" onclick="deleterOnclick()">&times</button>
         </div>
         [% for (let index = 0; index < data.vids.length; index++) { %] 
-        <div class="sidebar__selector" [%= `onclick=setSource('${title}',${index})` %]>
+        <div class="sidebar__selector" [%= `onclick=setSource(${index})` %]>
             [%= data.vids[index] %]
         </div>
         [% } %]
@@ -26,15 +26,15 @@
             <div class="sidebar__tagdisplay">
                 [% for (const tag of data.tags) { %]
                 <button class="sidebar__tagdisplay--button">
-                    <span class="sidebar__tagdisplay--tag" contenteditable="true" [%= `onblur=updateTags('${title}')` %]>
+                    <span class="sidebar__tagdisplay--tag" contenteditable="true" onblur="updateTags()">
                         [%= tag %]
                     </span>
-                    <span class="sidebar__tagdisplay--deleter" [%= `onclick=removeTag($(this).parent(),'${title}')` %]>&times</span>
+                    <span class="sidebar__tagdisplay--deleter" onclick="removeTag($(this).parent())">&times</span>
                 </button>
                 [% } %]
             </div>
             <div class="sidebar__tagadder">
-                <button class="sidebar__tagadder--adder" [%= `onclick=createTag('${title}')` %]>+</button>
+                <button class="sidebar__tagadder--adder" onclick="createTag()">+</button>
             </div>
         </div>
     </div>

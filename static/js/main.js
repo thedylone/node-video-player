@@ -40,10 +40,10 @@ function retrieveTitle() {
 
 /**
  * sets the source of the video.
- * @param {string} title the title of the video.
  * @param {int} index the index of the video.
  */
-function setSource(title, index) {
+function setSource(index) {
+    const title = retrieveTitle();
     const path = '/video?title=' + title + '&index=' + index;
     const video = $('.video-frame__video');
     if ($(video).attr('src') !== path) $(video).attr('src', path);
@@ -51,10 +51,10 @@ function setSource(title, index) {
 
 /**
  * sends a POST request to add title's counter by specified number.
- * @param {string} title the title of the video.
  * @param {int} num the number to add to the counter.
  */
-function addCounter(title, num) {
+function addCounter(num) {
+    const title = retrieveTitle();
     $.post('/count', {title: title, num: num}, (data) => {
         $('.sidebar__counter').text(`count: ${data}`);
     });
@@ -63,9 +63,9 @@ function addCounter(title, num) {
 /**
  * sends a POST request to delete the title from storage.
  * on success, show success modal and redirect to index after 3 seconds.
- * @param {string} title the title of the video.
  */
-function deleteTitle(title) {
+function deleteTitle() {
+    const title = retrieveTitle();
     $.post('/delete', {title: title}, (data) => {
         showModal({
             title: 'success',
@@ -134,33 +134,23 @@ window.onclick = (e) => {
     }
 };
 
-/**
- * deleteTitle function with event handler.
- * @param {Object} e the event object.
- * @param {string} e.data.title the title of the video.
- */
-function deleteTitleHandler(e) {
-    deleteTitle(e.data.title);
-}
 
 /**
  * assign the showModal function to the deleter button.
- * @param {string} title the title of the video.
  */
-function deleterOnclick(title) {
+function deleterOnclick() {
     showModal({
         title: 'delete',
         text: 'are you sure you want to delete this video?',
-        confirm: deleteTitleHandler,
-        confirmParams: {title: title},
+        confirm: deleteTitle,
     });
 }
 
 /**
  * pushes all tags values into a list and POST it to the server.
- * @param {string} title the title of the video.
  */
-function updateTags(title) {
+function updateTags() {
+    const title = retrieveTitle();
     const tags = [];
     $.each($('.sidebar__tagdisplay--tag'), (index, tag) => {
         tags.push($.trim($(tag).text()));
@@ -173,15 +163,14 @@ function updateTags(title) {
 
 /**
  * create an empty tag and append it to the tagdisplay.
- * @param {string} title the title of the video.
  */
-function createTag(title) {
+function createTag() {
     const button = $(`<button class="sidebar__tagdisplay--button">
     <span class="sidebar__tagdisplay--tag" contenteditable="true"
-    onblur=updateTags('${title}')>
+    onblur=updateTags()>
     </span>
     <span class="sidebar__tagdisplay--deleter"
-    onclick=removeTag($(this).parent(),'${title}')>
+    onclick=removeTag($(this).parent())>
     &times
     </span>
     </button>`);
@@ -192,11 +181,10 @@ function createTag(title) {
  * removes the specified button from the tagdisplay.
  * updates the tags on the server.
  * @param {button} tag the button for the tag to delete.
- * @param {string} title the title of the video.
  */
-function removeTag(tag, title) {
+function removeTag(tag) {
     $(tag).remove();
-    updateTags(title);
+    updateTags();
 }
 
 let showPreviewTimeout;
