@@ -26,6 +26,19 @@ function filterSource() {
 }
 
 /**
+ * retrieve title param from url
+ * @return {string} the title from the url if exists, else null
+ */
+function retrieveTitle() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('title')) {
+        return params.get('title');
+    } else {
+        return null;
+    }
+}
+
+/**
  * sets the source of the video.
  * @param {string} title the title of the video.
  * @param {int} index the index of the video.
