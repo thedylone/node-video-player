@@ -198,6 +198,7 @@ function showPreview(video) {
     showPreviewTimeout = setTimeout(() => {
         const path = '/video?title=' + $(video).data('path') + '&index=0';
         $(video).attr('src', path);
+        $(video).prop('controls', true);
         $(video).trigger('play').on('error', () => { });
         stopPreviewTimeout = setTimeout(() => {
             if ($(video).attr('src')) stopPreview(video);
@@ -214,6 +215,7 @@ function stopPreview(video) {
     clearTimeout(stopPreviewTimeout);
     // $(video).removeAttr('src');
     $(video).attr('src', '');
+    $(video).prop('controls', false);
     $(video).prop('currentTime', 0);
     $(video).trigger('pause').on('error', () => { });
 }
