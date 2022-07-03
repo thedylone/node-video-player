@@ -16,10 +16,10 @@
     </div>
   </div>
   <div class="contents-container">
-    [% if (data) { for (var title in data) {
+    [% let count = 0; if (data) { for (var title in data) {
       if (
         (!filter || filter.includes(data[title].source)) && 
-        (!search || title.toLowerCase().includes(search.toLowerCase()) || data[title].tags.join().toLowerCase().includes(search.toLowerCase()) )) { %]
+        (!search || title.toLowerCase().includes(search.toLowerCase()) || data[title].tags.join().toLowerCase().includes(search.toLowerCase()) )) { count++; %]
     <div class="video-container">
       <a class="video-container__thumbnail" href="[%= encodeURI('/watch?title='+title) %]">
         <video class="video-container__thumbnail--video" muted preload="none" data-path="[%= title %]" onmouseenter="showPreview($(this))" onmouseleave="stopPreview($(this))"></video>
@@ -45,6 +45,11 @@
       </div>
     </div>
     [% } } } %]
+    [% if (count == 0) { %]
+      <div class="video-container--empty">
+        No results found
+      </div>
+    [% } %]
   </div>
   [%- include('partials/popups'); -%]
 </body>

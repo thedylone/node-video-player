@@ -267,6 +267,12 @@ body::-webkit-scrollbar {
     text-align: right;
 }
 
+.video-container--empty {
+    width: calc(100% / var(--video-columns) - 10px);
+    margin: auto;
+    font-size: 2em;
+}
+
 .video-frame {
     margin-top: var(--header-height);
     margin-right: var(--sidebar-width);
