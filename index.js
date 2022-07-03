@@ -153,14 +153,23 @@ app.get('/', [urlencodedParser], (req, res) => {
     if (filter && !Array.isArray(filter)) {
         filter = [filter];
     }
+    const search = req.query.search;
     updateDB()
         .then(
             (data) => {
-                res.render('index', {data: data, filter: filter});
+                res.render('index', {
+                    data: data,
+                    filter: filter,
+                    search: search,
+                });
             },
             (error) => {
                 console.log(error);
-                res.render('index', {data: null, filter: filter});
+                res.render('index', {
+                    data: null,
+                    filter: filter,
+                    search: search,
+                });
             },
         ).catch((error) => console.log(error));
 });
