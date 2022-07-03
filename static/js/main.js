@@ -44,9 +44,12 @@ function retrieveTitle() {
  */
 function setSource(index) {
     const title = retrieveTitle();
-    const path = '/video?title=' + title + '&index=' + index;
+    const path = encodeURI('/video?title=' + title + '&index=' + index);
     const video = $('.video-frame__video');
-    if ($(video).attr('src') !== path) $(video).attr('src', path);
+    if ($(video).attr('src') !== path) {
+        $(video).attr('src', path);
+        showAlert({title: 'source changed'});
+    }
 }
 
 /**
@@ -55,9 +58,18 @@ function setSource(index) {
  */
 function addCounter(num) {
     const title = retrieveTitle();
-    $.post('/count', {title: title, num: num}, (data) => {
-        $('.sidebar__counter').text(`count: ${data}`);
-    });
+    $.post('/count', {title: title, num: num})
+        .done((data) => {
+            $('.sidebar__counter').text(`count: ${data}`);
+            showAlert({title: 'counter changed', mood: 'positive'});
+        })
+        .fail((xhr, status, error) => {
+            showAlert({
+                title: 'failed to changed counter',
+                text: status,
+                mood: 'negative',
+            });
+        });
 };
 
 /**
@@ -186,10 +198,18 @@ function updateTags() {
     $.each($('.sidebar__tagdisplay--tag'), (index, tag) => {
         tags.push($.trim($(tag).text()));
     });
-    console.log(tags);
-    $.post('/tags', {title: title, tags: tags.sort()}, (data) => {
-        console.log(data);
-    });
+    // console.log(tags);
+    $.post('/tags', {title: title, tags: tags.sort()})
+        .done((data) => {
+            showAlert({title: 'tags updated', mood: 'positive'});
+        })
+        .fail((xhr, status, error) => {
+            showAlert({
+                title: 'failed to update tags',
+                text: error,
+                mood: 'negative',
+            });
+        });
 }
 
 /**
