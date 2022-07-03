@@ -134,6 +134,37 @@ window.onclick = (e) => {
     }
 };
 
+/**
+ * display an alert popup with information.
+ * alert popup will show for 3 seconds.
+ * @param {Object} data the information to display in the alert.
+ * @param {string} data.title the title of the alert.
+ * @param {string} data.text the text of the alert.
+ * @param {('neutral' | 'positive' | 'negative')} data.mood the colour to show.
+ */
+function showAlert(data) {
+    const defaults = {
+        title: 'alert',
+        text: '',
+        mood: 'neutral',
+    };
+    const params = {...defaults, ...data};
+    const alertWrapper = $('.alert-wrapper');
+    const alert = $(`<div class="alert-content alert-content--${params.mood}">
+    <div class="alert-content__title">
+        <span class="alert-content__title--text">${params.title}</span>
+    </div>
+    <div class="alert-content__text">
+        <span class="alert-content__text--text">${params.text}</span>
+    </div>
+    </div>`);
+    alert.appendTo(alertWrapper);
+    setTimeout(() => {
+        alert.fadeOut('slow', () => {
+            alert.remove();
+        });
+    }, 3000);
+}
 
 /**
  * assign the showModal function to the deleter button.

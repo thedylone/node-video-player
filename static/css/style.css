@@ -239,6 +239,8 @@ body::-webkit-scrollbar {
 }
 
 .video-frame__video {
+    max-width: 99vw;
+    max-width: calc(99vw - var(--sidebar-width));
     max-height: calc(99vh - var(--header-height));
     margin: auto;
 }
@@ -298,6 +300,32 @@ body::-webkit-scrollbar {
     background: rgba(255, 70, 70, 0.5);
 }
 
+.alert-wrapper {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    max-width: 300px;
+    width: 50%;
+    padding: 0 15px;
+}
+
+.alert-content {
+    width: 80%;
+    max-width: 400px;
+    margin: 5px auto;
+    padding: 10px;
+    background:rgba(150, 150, 150, 0.5);
+    border-radius: 10px;
+}
+
+.alert-content--positive {
+    border: 2px solid green;
+}
+
+.alert-content--negative {
+    border: 2px solid red;
+}
+
 button {
     background-color: #a8a8a8;
     border-radius: 8px;
@@ -332,7 +360,7 @@ button:hover {
 
 @media screen and (max-width:900px) {
     :root {
-        --sidebar-width: 0;
+        --sidebar-width: 0px;
         --video-columns: 2;
     }
 
@@ -342,6 +370,11 @@ button:hover {
 
     .header__sidebarbutton {
         display: flex;
+    }
+
+    .alert-wrapper {
+        width: calc(100% - 30px);
+        max-width: 100%;
     }
 }
 
