@@ -3,12 +3,12 @@
 [%- include('partials/head', {title: 'main'}); -%]
 
 <body spellcheck="false">
-  [%- include('partials/header'); -%]
+  [%- include('partials/header', {search: search}); -%]
   <div class="sidebar">
     <div class="sidebar__filterwrapper">
       [% if (data) for (var source of [...new Set(Object.values(data).map(x=> x.source))]) { %]
       <label class="sidebar__filter__list--item" onclick="filterSource()">
-        <input type="checkbox" value="[%= source %]" [% if (filter && filter.includes(source)) { %] checked [% } %]>
+        <input type="checkbox" name="filter" value="[%= source %]" [% if (filter && filter.includes(source)) { %] checked [% } %]>
         <span class="sidebar__filter__list--check"></span>
         [%= source %]
       </label>

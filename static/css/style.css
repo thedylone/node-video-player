@@ -43,6 +43,8 @@ body::-webkit-scrollbar {
     position: fixed;
     top: 0;
     left: 0;
+    display: flex;
+    justify-content: space-between;
 }
 
 .header__logo {
@@ -52,13 +54,48 @@ body::-webkit-scrollbar {
 .header__logoimage {
     height: var(--header-height);
     width: auto;
+    width: 226px;
+}
+
+.header__searchwrapper {
+    height: 100%;
+    display: flex;
+    flex-basis: 400px;
+    align-items: center;
+    margin: 0 15px;
+}
+
+.header__searchform {
+    width: 100%;
+    display: flex;
+}
+
+.header__searchbox {
+    flex: 1;
+    height: 40px;
+}
+
+.header__searchinput {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    background: #000;
+    border: none;
+    padding: 5px;
+}
+
+.header__searchbutton {
+    font-size: 1.5em;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border: 1px solid black;
+    background: #2f2f2f;
 }
 
 .header__sidebarbutton {
     display: none;
-    position: absolute;
-    float: right;
-    right: 0px;
     padding: 0 15px;
     height: var(--header-height);
     align-items: center;

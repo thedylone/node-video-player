@@ -3,7 +3,7 @@
 [%- include('partials/head', {title: title}); -%]
 
 <body spellcheck="false">
-    [%- include('partials/header'); -%]
+    [%- include('partials/header', {search: ''}); -%]
     [% if (data) { %]
     <div class="sidebar">
         <div class="sidebar__title">
