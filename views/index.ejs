@@ -6,7 +6,7 @@
   [%- include('partials/header', {search: search}); -%]
   <div class="sidebar">
     <div class="sidebar__filterwrapper">
-      [% if (data) for (var source of [...new Set(Object.values(data).map(x=> x.source))]) { %]
+      [% for (const source of sources) { %]
       <label class="sidebar__filter__list--item" onclick="filterSource()">
         <input type="checkbox" name="filter" value="[%= source %]" [% if (filter && filter.includes(source)) { %] checked [% } %]>
         <span class="sidebar__filter__list--check"></span>
@@ -16,10 +16,7 @@
     </div>
   </div>
   <div class="contents-container">
-    [% let count = 0; if (data) { for (var id in data) {
-      if (
-        (!filter || filter.includes(data[id].source)) && 
-        (!search || id.toLowerCase().includes(search.toLowerCase()) || data[id].tags.join().toLowerCase().includes(search.toLowerCase()) )) { count++; %]
+    [% if (Object.keys(data).length) { for (var id in data) { %]
     <div class="video-container">
       <a class="video-container__thumbnail" href="[%= encodeURI('/watch?id='+id) %]">
         <video class="video-container__thumbnail--video" muted preload="none" data-path="[%= id %]" onmouseenter="showPreview($(this))" onmouseleave="stopPreview($(this))"></video>
@@ -44,8 +41,7 @@
         [% } %]
       </div>
     </div>
-    [% } } } %]
-    [% if (count == 0) { %]
+    [% } } else { %]
       <div class="video-container--empty">
         No results found
       </div>

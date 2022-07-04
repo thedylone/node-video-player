@@ -86,7 +86,8 @@ async function updateDB() {
         .then((res) => console.log('write complete'))
         .catch((error) => console.log(error));
 
-    return database;
+    // return database;
+    setTimeout(updateDB, 1000 * 60);
 }
 
 /**
@@ -157,24 +158,37 @@ app.get('/', [urlencodedParser], (req, res) => {
         filter = [filter];
     }
     const search = req.query.search;
-    updateDB()
-        .then(
-            (data) => {
-                res.render('index', {
-                    data: data,
-                    filter: filter,
-                    search: search,
-                });
-            },
-            (error) => {
-                console.log(error);
-                res.render('index', {
-                    data: null,
-                    filter: filter,
-                    search: search,
-                });
-            },
-        ).catch((error) => console.log(error));
+    const sources = new Set(Object.values(database).map((x)=> x.source));
+    const data = JSON.parse(JSON.stringify(database));
+    if (filter) {
+        for (const id in data) {
+            if (!filter.includes(data[id].source)) delete data[id];
+        }
+    }
+    res.render('index', {
+        sources: sources,
+        data: data,
+        filter: filter,
+        search: search,
+    });
+    // updateDB()
+    //     .then(
+    //         (data) => {
+    //             res.render('index', {
+    //                 data: data,
+    //                 filter: filter,
+    //                 search: search,
+    //             });
+    //         },
+    //         (error) => {
+    //             console.log(error);
+    //             res.render('index', {
+    //                 data: null,
+    //                 filter: filter,
+    //                 search: search,
+    //             });
+    //         },
+    //     ).catch((error) => console.log(error));
 });
 
 /**
