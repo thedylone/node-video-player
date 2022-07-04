@@ -7,7 +7,7 @@
     [% if (data) { %]
     <div class="sidebar">
         <div class="sidebar__title">
-            [%= title %]
+            [%= data.title %]
         </div>
         <div class="sidebar__buttonwrapper">
             <button class="sidebar__button sidebar__button--adder" onclick="addCounter(-1)">-</button>
@@ -40,7 +40,7 @@
     </div>
     [% } %]
     <div class="video-frame">
-        <video class="video-frame__video" src="[%= encodeURI('/video?title='+title+'&index=0') %]" preload="metadata"
+        <video class="video-frame__video" src="[%= encodeURI('/video?id='+id+'&index=0') %]" preload="metadata"
             controls></video>
     </div>
     [%- include('partials/popups'); -%]

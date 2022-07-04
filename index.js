@@ -4,6 +4,7 @@ const jsonfile = require('jsonfile');
 const fs = require('fs');
 const fsp = require('fs').promises;
 const ejs = require('ejs');
+const {nanoid} = require('nanoid');
 
 ejs.openDelimiter = '[';
 ejs.closeDelimiter = ']';
@@ -62,22 +63,23 @@ async function updateDB() {
             } catch (error) {
                 console.log(error);
             }
-            if (Object.keys(database).includes(title)) {
-                database[title]['source'] = source;
-                database[title]['vids'] = vids;
-            } else {
-                database[title] = {
-                    'source': source,
-                    'counter': 0,
-                    'tags': [],
-                    'vids': vids,
+            if (!Object.values(database).map((x) => {
+                return x.title;
+            }).includes(title)) {
+                const generatedId = nanoid(12);
+                database[generatedId] = {
+                    title: title,
+                    source: source,
+                    counter: 0,
+                    tags: [],
+                    vids: vids,
                 };
             }
         }
     }
     if (allFiles.length > 0) {
-        for (const title of Object.keys(database)) {
-            if (!allFiles.includes(title)) delete database[title];
+        for (const id of Object.keys(database)) {
+            if (!allFiles.includes(database[id].title)) delete database[id];
         }
     }
     jsonfile.writeFile(DB_FILE, database)
@@ -88,27 +90,28 @@ async function updateDB() {
 }
 
 /**
- * adds to the database's title's counter.
+ * adds to the database's id's counter.
  * writes the database to the database file.
  * returns the new counter.
- * @param {string} title the title of the video
+ * @param {string} id the id of the video
  * @param {int} num the value to add to the counter
  * @return {int} the new counter
  */
-async function addCount(title, num) {
-    database[title].counter += parseInt(num);
+async function addCount(id, num) {
+    database[id].counter += parseInt(num);
     jsonfile.writeFile(DB_FILE, database)
         .then((res) => console.log('write complete'));
-    return database[title].counter;
+    return database[id].counter;
 }
 
 /**
- * removes title and its videos from the directory.
- * @param {string} title the title of the video
+ * removes id and its videos from the directory.
+ * @param {string} id the id of the video
  * @return {boolean} true if successful, false otherwise
  */
-async function deleteTitle(title) {
-    const source = database[title].source;
+async function deleteTitle(id) {
+    const source = database[id].source;
+    const title = database[id].title;
     const success = await fsp.rm([DIRECTORY, source, title].join('/'), {
         recursive: true,
     }, (error) => {
@@ -116,7 +119,7 @@ async function deleteTitle(title) {
             console.log('deleteTitle: ' + error);
             return false;
         } else {
-            delete database[title];
+            delete database[id];
             return true;
         }
     });
@@ -126,12 +129,12 @@ async function deleteTitle(title) {
 
 /**
  * updates the database with the new tags.
- * @param {string} title the title of the video
+ * @param {string} id the id of the video
  * @param {string[]} tags the tags of the video
  * @return {boolean} true if successful, false otherwise
  */
-async function updateTags(title, tags) {
-    database[title].tags = tags;
+async function updateTags(id, tags) {
+    database[id].tags = tags;
     return jsonfile.writeFile(DB_FILE, database)
         .then((res) => {
             console.log('write complete');
@@ -175,26 +178,27 @@ app.get('/', [urlencodedParser], (req, res) => {
 });
 
 /**
- * GET 'watch' path handler with query of title.
+ * GET 'watch' path handler with query of id.
  * renders the watch page with the information from the database.
- * access by /watch?title=<title>
+ * access by /watch?id=<id>
 */
 app.get('/watch', [urlencodedParser], (req, res) => {
-    const title = req.query.title;
-    res.render('watch', {title: title, data: database[title]});
+    const id = req.query.id;
+    const title = database[id] ? database[id].title : '404';
+    res.render('watch', {title: title, id: id, data: database[id]});
 });
 
 /**
- * GET 'video' path handler with query of title and index.
+ * GET 'video' path handler with query of id and index.
  * returns video file data.
- * access by /video?title=<title>&index=<index>
+ * access by /video?id=<id>&index=<index>
  */
 app.get('/video', [urlencodedParser], (req, res) => {
-    const title = req.query.title;
+    const id = req.query.id;
     const index = req.query.index;
     let data;
     try {
-        data = database[title];
+        data = database[id];
     } catch (error) {
         console.log(error);
     }
@@ -203,6 +207,7 @@ app.get('/video', [urlencodedParser], (req, res) => {
         return;
     }
     const video = data.vids[index];
+    const title = data.title;
     const videoPath = [DIRECTORY, data.source, title, video].join('/');
     let videoStat;
     try {
@@ -241,24 +246,24 @@ app.get('/video', [urlencodedParser], (req, res) => {
 });
 
 /**
- * POST 'count' path handler. adds to the database's title's counter.
+ * POST 'count' path handler. adds to the database's id's counter.
  * returns the new counter.
- * access by /count with body of {title: <title>, num: <num>}
+ * access by /count with body of {id: <id>, num: <num>}
  */
 app.post('/count', [urlencodedParser], (req, res) => {
-    let title;
+    let id;
     let num;
     try {
-        title = req.body.title;
+        id = req.body.id;
         num = req.body.num;
     } catch (error) {
         console.log(error);
     }
-    if (!title || !num) {
+    if (!id || !num) {
         res.status(400).send('400 Bad Request');
         return;
     }
-    addCount(title, num)
+    addCount(id, num)
         .then((count) => {
             res.writeHead(200, {'Content-Type': 'text/plain'});
             res.end(count.toString());
@@ -270,22 +275,22 @@ app.post('/count', [urlencodedParser], (req, res) => {
 });
 
 /**
- * POST 'delete' path handler. deletes title and its videos from the directory.
+ * POST 'delete' path handler. deletes id and its videos from the directory.
  * returns true if successful, false otherwise.
- * access by /delete with body of {title: <title>}
+ * access by /delete with body of {id: <id>}
  */
 app.post('/delete', [urlencodedParser], (req, res) => {
-    let title;
+    let id;
     try {
-        title = req.body.title;
+        id = req.body.id;
     } catch (error) {
         console.log(error);
     }
-    if (!title) {
+    if (!id) {
         res.status(400).send('400 Bad Request');
         return;
     }
-    deleteTitle(title)
+    deleteTitle(id)
         .then((success) => {
             if (success) {
                 res.status(200).send('200 OK');
@@ -299,15 +304,15 @@ app.post('/delete', [urlencodedParser], (req, res) => {
 });
 
 /**
- * POST 'tags' path handler. updates the database's title's tags.
+ * POST 'tags' path handler. updates the database's id's tags.
  * returns true if successful, false otherwise.
- * access by /tags with body of {title: <title>, tags: <tags>}
+ * access by /tags with body of {id: <id>, tags: <tags>}
  */
 app.post('/tags', [urlencodedParser], (req, res) => {
-    let title;
+    let id;
     let tags;
     try {
-        title = req.body.title;
+        id = req.body.id;
         tags = req.body['tags[]'];
         if (tags && !Array.isArray(tags)) {
             tags = [tags];
@@ -317,11 +322,11 @@ app.post('/tags', [urlencodedParser], (req, res) => {
     } catch (error) {
         console.log(error);
     }
-    if (!title || !tags) {
+    if (!id || !tags) {
         res.status(400).send('400 Bad Request');
         return;
     }
-    updateTags(title, tags)
+    updateTags(id, tags)
         .then((success) => {
             if (success) {
                 res.status(200).send('200 OK');

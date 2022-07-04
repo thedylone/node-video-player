@@ -26,13 +26,13 @@ function filterSource() {
 }
 
 /**
- * retrieve title param from url
- * @return {string} the title from the url if exists, else null
+ * retrieve id param from url
+ * @return {string} the id from the url if exists, else null
  */
-function retrieveTitle() {
+function retrieveId() {
     const params = new URLSearchParams(window.location.search);
-    if (params.has('title')) {
-        return params.get('title');
+    if (params.has('id')) {
+        return params.get('id');
     } else {
         return null;
     }
@@ -43,8 +43,8 @@ function retrieveTitle() {
  * @param {int} index the index of the video.
  */
 function setSource(index) {
-    const title = retrieveTitle();
-    const path = encodeURI('/video?title=' + title + '&index=' + index);
+    const id = retrieveId();
+    const path = encodeURI('/video?id=' + id + '&index=' + index);
     const video = $('.video-frame__video');
     if ($(video).attr('src') !== path) {
         $(video).attr('src', path);
@@ -57,8 +57,8 @@ function setSource(index) {
  * @param {int} num the number to add to the counter.
  */
 function addCounter(num) {
-    const title = retrieveTitle();
-    $.post('/count', {title: title, num: num})
+    const id = retrieveId();
+    $.post('/count', {id: id, num: num})
         .done((data) => {
             $('.sidebar__counter').text(`count: ${data}`);
             showAlert({title: 'counter changed', mood: 'positive'});
@@ -77,8 +77,8 @@ function addCounter(num) {
  * on success, show success modal and redirect to index after 3 seconds.
  */
 function deleteTitle() {
-    const title = retrieveTitle();
-    $.post('/delete', {title: title}, (data) => {
+    const id = retrieveId();
+    $.post('/delete', {id: id}, (data) => {
         showModal({
             title: 'success',
             text: 'video deleted. redirecting back to index in 3 seconds...',
@@ -193,13 +193,13 @@ function deleterOnclick() {
  * pushes all tags values into a list and POST it to the server.
  */
 function updateTags() {
-    const title = retrieveTitle();
+    const id = retrieveId();
     const tags = [];
     $.each($('.sidebar__tagdisplay--tag'), (index, tag) => {
         tags.push($.trim($(tag).text()));
     });
     // console.log(tags);
-    $.post('/tags', {title: title, tags: tags.sort()})
+    $.post('/tags', {id: id, tags: tags.sort()})
         .done((data) => {
             showAlert({title: 'tags updated', mood: 'positive'});
         })
@@ -248,7 +248,7 @@ let stopPreviewTimeout;
  */
 function showPreview(video) {
     showPreviewTimeout = setTimeout(() => {
-        const path = '/video?title=' + $(video).data('path') + '&index=0';
+        const path = '/video?id=' + $(video).data('path') + '&index=0';
         $(video).attr('src', path);
         $(video).prop('controls', true);
         $(video).trigger('play').on('error', () => { });

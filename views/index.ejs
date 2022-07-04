@@ -16,28 +16,28 @@
     </div>
   </div>
   <div class="contents-container">
-    [% let count = 0; if (data) { for (var title in data) {
+    [% let count = 0; if (data) { for (var id in data) {
       if (
-        (!filter || filter.includes(data[title].source)) && 
-        (!search || title.toLowerCase().includes(search.toLowerCase()) || data[title].tags.join().toLowerCase().includes(search.toLowerCase()) )) { count++; %]
+        (!filter || filter.includes(data[id].source)) && 
+        (!search || id.toLowerCase().includes(search.toLowerCase()) || data[id].tags.join().toLowerCase().includes(search.toLowerCase()) )) { count++; %]
     <div class="video-container">
-      <a class="video-container__thumbnail" href="[%= encodeURI('/watch?title='+title) %]">
-        <video class="video-container__thumbnail--video" muted preload="none" data-path="[%= title %]" onmouseenter="showPreview($(this))" onmouseleave="stopPreview($(this))"></video>
+      <a class="video-container__thumbnail" href="[%= encodeURI('/watch?id='+id) %]">
+        <video class="video-container__thumbnail--video" muted preload="none" data-path="[%= id %]" onmouseenter="showPreview($(this))" onmouseleave="stopPreview($(this))"></video>
       </a>
-      <a class="video-container__title" href="[%= encodeURI('/watch?title='+title) %]">
-        [%= title %]
+      <a class="video-container__title" href="[%= encodeURI('/watch?id='+id) %]">
+        [%= data[id].title %]
       </a>
       <div class="video-container__subtitle">
         <div class="video-container__subtitle--source">
-          [%= data[title].source %]
+          [%= data[id].source %]
         </div>
         <div class="video-container__subtitle--counter">
-          [%= data[title].counter %]
+          [%= data[id].counter %]
         </div>
       </div>
       <div class="video-container__tags">
         tags:
-        [% for (var tag of data[title].tags) { %]
+        [% for (var tag of data[id].tags) { %]
         <button class="video-container__tags--tag">
           [%= tag %]
         </button>
