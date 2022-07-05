@@ -157,12 +157,17 @@ app.get('/', [urlencodedParser], (req, res) => {
     if (filter && !Array.isArray(filter)) {
         filter = [filter];
     }
-    const search = req.query.search;
-    const sources = new Set(Object.values(database).map((x)=> x.source));
+    let search = req.query.search;
+    if (search) search = search.toLowerCase();
+    const sources = new Set(Object.values(database).map((x) => x.source));
     const data = JSON.parse(JSON.stringify(database));
-    if (filter) {
+    if (filter || search) {
         for (const id in data) {
-            if (!filter.includes(data[id].source)) delete data[id];
+            if ((filter && !filter.includes(data[id].source)) ||
+                (search && !data[id].title.toLowerCase().includes(search) &&
+                    !data[id].tags.join().toLowerCase().includes(search))) {
+                delete data[id];
+            }
         }
     }
     res.render('index', {
