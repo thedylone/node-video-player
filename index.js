@@ -5,12 +5,15 @@ const fs = require('fs');
 const fsp = require('fs').promises;
 const ejs = require('ejs');
 const {nanoid} = require('nanoid');
+const fluent = require('fluent-ffmpeg');
 
 ejs.openDelimiter = '[';
 ejs.closeDelimiter = ']';
 
 // environment variables
 require('dotenv').config();
+const FFMPEG_PATH = process.env.FFMPEG_PATH;
+const FFPROBE_PATH = process.env.FFPROBE_PATH;
 const DB_FILE = process.env.DB_FILE;
 const DIRECTORY = process.env.DIRECTORY;
 const PORT_NUMBER = process.env.PORT_NUMBER;
@@ -41,6 +44,7 @@ async function updateDB() {
         console.log(error);
         return;
     }
+    // loop through each source
     for (const source of sources) {
         let titles;
         try {
@@ -49,31 +53,53 @@ async function updateDB() {
             );
         } catch (error) {
             console.log(error);
-            return;
+            break;
         }
+        // filter titles for folders only
         titles = titles.filter((title) => title.isDirectory())
             .map((title) => title.name);
+        // loop through each title
         for (const title of titles) {
             allFiles.push(title);
-            let vids;
+            const titlePath = [DIRECTORY, source, title].join('/');
+            let files;
             try {
-                vids = await fsp.readdir(
-                    [DIRECTORY, source, title].join('/'),
-                );
+                files = await fsp.readdir(titlePath);
             } catch (error) {
                 console.log(error);
+                break;
             }
-            if (!Object.values(database).map((x) => {
-                return x.title;
-            }).includes(title)) {
-                const generatedId = nanoid(12);
-                database[generatedId] = {
-                    title: title,
-                    source: source,
-                    counter: 0,
-                    tags: [],
-                    vids: vids,
-                };
+            const vids = files.filter((x) => {
+                return !x.endsWith('.png');
+            });
+            const thumbnailEmpty = vids.length == files.length;
+            if (vids.length > 0) {
+                // add to database if database does not contain title
+                if (!Object.values(database).map((x) => {
+                    return x.title;
+                }).includes(title)) {
+                    const generatedId = nanoid(12);
+                    database[generatedId] = {
+                        title: title,
+                        source: source,
+                        counter: 0,
+                        tags: [],
+                        vids: vids,
+                    };
+                }
+                // generate thumbnail if thumbnail empty
+                if (thumbnailEmpty) {
+                    fluent(titlePath + '/' + vids[0])
+                        .screenshots({
+                            count: 1,
+                            timemarks: ['50%'],
+                            size: '480x?',
+                        }, titlePath, (err) => {
+                            console.log('thumbnail created');
+                        })
+                        .setFfmpegPath(FFMPEG_PATH)
+                        .setFfprobePath(FFPROBE_PATH);
+                }
             }
         }
     }
