@@ -78,6 +78,8 @@ function addCounter(num) {
  */
 function deleteTitle() {
     const id = retrieveId();
+    const video = $('.video-frame__video');
+    $(video).attr('src', '');
     $.post('/delete', {id: id}, (data) => {
         showModal({
             title: 'success',

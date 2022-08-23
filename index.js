@@ -239,6 +239,9 @@ app.get('/watch', [urlencodedParser], (req, res) => {
  * access by /video?id=<id>&index=<index>
  */
 app.get('/video', [urlencodedParser], (req, res) => {
+    if (req.socket.destroyed) {
+        return;
+    }
     const id = req.query.id;
     const index = req.query.index;
     let data;
@@ -254,6 +257,7 @@ app.get('/video', [urlencodedParser], (req, res) => {
     const video = data.vids[index];
     const title = data.title;
     const videoPath = [DIRECTORY, data.source, title, video].join('/');
+    let stream;
     let videoStat;
     try {
         videoStat = fs.statSync(videoPath);
@@ -271,7 +275,7 @@ app.get('/video', [urlencodedParser], (req, res) => {
         const start = parseInt(parts[0], 10);
         const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
         const chunksize = (end - start) + 1;
-        const file = fs.createReadStream(videoPath, {start, end});
+        stream = fs.createReadStream(videoPath, {start, end});
         const head = {
             'Content-Range': `bytes ${start}-${end}/${fileSize}`,
             'Accept-Ranges': 'bytes',
@@ -279,15 +283,18 @@ app.get('/video', [urlencodedParser], (req, res) => {
             'Content-Type': 'video/mp4',
         };
         res.writeHead(206, head);
-        file.pipe(res);
     } else {
         const head = {
             'Content-Length': fileSize,
             'Content-Type': 'video/mp4',
         };
         res.writeHead(200, head);
-        fs.createReadStream(videoPath).pipe(res);
+        stream = fs.createReadStream(videoPath);
     }
+    stream.pipe(res);
+    res.on('close', () => {
+        if (stream) stream.destroy();
+    });
 });
 
 /**
