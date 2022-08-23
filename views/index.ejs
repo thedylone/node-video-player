@@ -19,7 +19,7 @@
     [% if (Object.keys(data).length) { for (var id in data) { %]
     <div class="video-container">
       <a class="video-container__thumbnail" href="[%= encodeURI('/watch?id='+id) %]">
-        <video class="video-container__thumbnail--video" muted preload="none" data-path="[%= id %]" onmouseenter="showPreview($(this))" onmouseleave="stopPreview($(this))"></video>
+        <video class="video-container__thumbnail--video" poster="[%= encodeURI('/thumbnail?id='+id) %]" muted preload="none" data-path="[%= id %]" onmouseenter="showPreview($(this))" onmouseleave="stopPreview($(this))"></video>
       </a>
       <a class="video-container__title" href="[%= encodeURI('/watch?id='+id) %]">
         [%= data[id].title %]

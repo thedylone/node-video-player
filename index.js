@@ -5,7 +5,7 @@ const fs = require('fs');
 const fsp = require('fs').promises;
 const ejs = require('ejs');
 const {nanoid} = require('nanoid');
-const fluent = require('fluent-ffmpeg');
+const ffmpeg = require('fluent-ffmpeg');
 
 ejs.openDelimiter = '[';
 ejs.closeDelimiter = ']';
@@ -89,7 +89,7 @@ async function updateDB() {
                 }
                 // generate thumbnail if thumbnail empty
                 if (thumbnailEmpty) {
-                    fluent(titlePath + '/' + vids[0])
+                    ffmpeg(titlePath + '/' + vids[0])
                         .screenshots({
                             count: 1,
                             timemarks: ['50%'],
@@ -287,6 +287,27 @@ app.get('/video', [urlencodedParser], (req, res) => {
         };
         res.writeHead(200, head);
         fs.createReadStream(videoPath).pipe(res);
+    }
+});
+
+/**
+ * GET 'thumbnail' path handler with query of id.
+ * returns thumbnail png if found.
+ * access by /thumbnail?id=<id>
+ */
+app.get('/thumbnail', [urlencodedParser], (req, res) => {
+    const id = req.query.id;
+    const title = database[id] ? database[id].title : '';
+    const source = database[id] ? database[id].source : '';
+    if (title && source) {
+        const thumbnail = [DIRECTORY, source, title, 'tn.png'].join('/');
+        try {
+            res.sendFile(thumbnail, {root: __dirname});
+        } catch {
+            res.status(404).send('not found');
+        }
+    } else {
+        res.status(404).send('not found');
     }
 });
 
