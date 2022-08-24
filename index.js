@@ -98,7 +98,14 @@ async function updateDB() {
                             console.log('thumbnail created');
                         })
                         .setFfmpegPath(FFMPEG_PATH)
-                        .setFfprobePath(FFPROBE_PATH);
+                        .setFfprobePath(FFPROBE_PATH)
+                        .on('error', (err, stdout, stderr) => {
+                            if (err) {
+                                console.log(err.message);
+                                console.log('stdout:\n' + stdout);
+                                console.log('stderr:\n' + stderr);
+                            }
+                        });
                 }
             }
         }
