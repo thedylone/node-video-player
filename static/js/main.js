@@ -83,11 +83,11 @@ function deleteTitle() {
     $.post('/delete', {id: id}, (data) => {
         showModal({
             title: 'success',
-            text: 'video deleted. redirecting back to index in 3 seconds...',
+            text: 'video deleted. redirecting back in 3 seconds...',
             showCancel: false,
             showConfirm: false,
         });
-        setTimeout(() => window.location.replace('/'), 3000);
+        setTimeout(() => history.back(), 3000);
     });
 }
 
