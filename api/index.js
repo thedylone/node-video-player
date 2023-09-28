@@ -3,12 +3,9 @@ const bodyParser = require('body-parser');
 const jsonfile = require('jsonfile');
 const fs = require('fs');
 const fsp = require('fs').promises;
-const ejs = require('ejs');
 const {nanoid} = require('nanoid');
 const ffmpeg = require('fluent-ffmpeg');
 
-ejs.openDelimiter = '[';
-ejs.closeDelimiter = ']';
 
 // environment variables
 require('dotenv').config();
@@ -23,7 +20,6 @@ let database = {};
 
 const app = express();
 app.use(express.static('static'));
-app.set('view engine', 'ejs');
 
 const urlencodedParser = bodyParser.urlencoded({extended: false});
 
@@ -185,48 +181,43 @@ async function updateTags(id, tags) {
  * filter is handled by the ejs template.
  * access by /?filter=<source>
  */
-app.get('/', [urlencodedParser], (req, res) => {
+app.get('/videos', [urlencodedParser], (req, res) => {
+    const videos = [];
     filter = req.query.filter;
     if (filter && !Array.isArray(filter)) {
         filter = [filter];
     }
     let search = req.query.search;
     if (search) search = search.toLowerCase();
-    const sources = new Set(Object.values(database).map((x) => x.source));
-    const data = JSON.parse(JSON.stringify(database));
-    if (filter || search) {
-        for (const id in data) {
-            if ((filter && !filter.includes(data[id].source)) ||
-                (search && !data[id].title.toLowerCase().includes(search) &&
-                    !data[id].tags.join().toLowerCase().includes(search))) {
-                delete data[id];
-            }
+    // const data = JSON.parse(JSON.stringify(database));
+    for (const id in database) {
+        // if ((filter && !filter.includes(data[id].source)) ||
+        //     (search && !data[id].title.toLowerCase().includes(search) &&
+        //         !data[id].tags.join().toLowerCase().includes(search))) {
+        //     delete data[id];
+        // }
+        if (filter && !filter.includes(database[id].source)) {
+            continue;
         }
+        if (search && !database[id].title.toLowerCase().includes(search) &&
+            !database[id].tags.join().toLowerCase().includes(search)) {
+            continue;
+        }
+        videos.push({
+            id: id,
+            title: database[id].title,
+            source: database[id].source,
+            counter: database[id].counter,
+            tags: database[id].tags,
+            videos: database[id].vids,
+        });
     }
-    res.render('index', {
-        sources: sources,
-        data: data,
-        filter: filter,
-        search: search,
-    });
-    // updateDB()
-    //     .then(
-    //         (data) => {
-    //             res.render('index', {
-    //                 data: data,
-    //                 filter: filter,
-    //                 search: search,
-    //             });
-    //         },
-    //         (error) => {
-    //             console.log(error);
-    //             res.render('index', {
-    //                 data: null,
-    //                 filter: filter,
-    //                 search: search,
-    //             });
-    //         },
-    //     ).catch((error) => console.log(error));
+    res.send(videos);
+});
+
+app.get('/sources', [urlencodedParser], (req, res) => {
+    const sources = new Set(Object.values(database).map((x) => x.source));
+    res.send(Array.from(sources));
 });
 
 /**
@@ -243,14 +234,14 @@ app.get('/watch', [urlencodedParser], (req, res) => {
 /**
  * GET 'video' path handler with query of id and index.
  * returns video file data.
- * access by /video?id=<id>&index=<index>
+ * access by /video/<id>?index=<index>
  */
-app.get('/video', [urlencodedParser], (req, res) => {
+app.get('/video/:id', [urlencodedParser], (req, res) => {
     if (req.socket.destroyed) {
         return;
     }
-    const id = req.query.id;
-    const index = req.query.index;
+    const id = req.params.id;
+    const index = req.query.index ?? 0;
     let data;
     try {
         data = database[id];
@@ -307,10 +298,10 @@ app.get('/video', [urlencodedParser], (req, res) => {
 /**
  * GET 'thumbnail' path handler with query of id.
  * returns thumbnail png if found.
- * access by /thumbnail?id=<id>
+ * access by /thumbnail/<id>
  */
-app.get('/thumbnail', [urlencodedParser], (req, res) => {
-    const id = req.query.id;
+app.get('/thumbnail/:id', [urlencodedParser], (req, res) => {
+    const id = req.params.id;
     const title = database[id] ? database[id].title : '';
     const source = database[id] ? database[id].source : '';
     if (title && source) {

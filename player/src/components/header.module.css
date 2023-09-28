@@ -1,0 +1,59 @@
+.root {
+    height: 5em;
+    background: #202020;
+    position: sticky;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1em;
+}
+
+.root>* {
+    height: 100%;
+}
+
+.logo {
+    height: 100%;
+}
+
+.search {
+    height: 3em;
+    display: flex;
+    flex-basis: 25em;
+    align-items: center;
+    margin: 0 15px;
+}
+
+.search_input {
+    width: 100%;
+    height: 100%;
+    background: black;
+    border: 1px solid black;
+    padding: 0 5px;
+}
+
+.search_button {
+    cursor: pointer;
+    height: 100%;
+    aspect-ratio: 1;
+    background: #2f2f2f;
+    border: 1px solid black;
+}
+
+.sidebar_button {
+    display: none;
+    cursor: pointer;
+    height: 100%;
+    aspect-ratio: 1;
+    background: none;
+    border: none;
+    font-size: 2em;
+}
+
+@media screen and (max-width: 768px) {
+    .sidebar_button {
+        display: block;
+    }
+}
