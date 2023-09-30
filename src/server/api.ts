@@ -7,6 +7,19 @@ export const fetchVideos = async ({
 }): Promise<Video[]> => {
     const url = new URL(request.url);
     const response = await fetch("/api/videos" + url.search);
+    if (!response.ok) return [];
+    const videos = await response.json();
+    return videos;
+};
+
+export const fetchVideosSearch = async ({
+    request,
+}: {
+    request: Request;
+}): Promise<Video[]> => {
+    const url = new URL(request.url);
+    const response = await fetch("/api/videos" + url.pathname + url.search);
+    if (!response.ok) return [];
     const videos = await response.json();
     return videos;
 };
@@ -15,17 +28,31 @@ export const fetchVideo = async ({
     request,
 }: {
     request: Request;
-}): Promise<Video> => {
+}): Promise<Video | null> => {
     const url = new URL(request.url);
     const response = await fetch(
         "/api/videos/id/" + url.searchParams.get("id")
     );
+    if (!response.ok) return null;
     const video = await response.json();
     return video;
 };
 
 export const fetchSources = async (): Promise<string[]> => {
     const response = await fetch("/api/sources");
+    if (!response.ok) return [];
+    const sources = await response.json();
+    return sources;
+};
+
+export const fetchSourcesSearch = async ({
+    request,
+}: {
+    request: Request;
+}): Promise<string[]> => {
+    const url = new URL(request.url);
+    const response = await fetch("/api/sources" + url.pathname + url.search);
+    if (!response.ok) return [];
     const sources = await response.json();
     return sources;
 };

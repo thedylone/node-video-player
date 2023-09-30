@@ -100,6 +100,21 @@ const updateDatabase = async () => {
     setTimeout(updateDatabase, 1000 * 60);
 };
 
+const getVideos = (search: string, filter?: string[]) => {
+    const videos: Video[] = [];
+    for (const id in database) {
+        const video = database[id];
+        if (filter && !filter.includes(video.source)) continue;
+        if (
+            !video.title.toLowerCase().includes(search) &&
+            !video.tags.some((x) => x.toLowerCase().includes(search))
+        )
+            continue;
+        videos.push(video);
+    }
+    return videos;
+};
+
 async function addCount(id: string, num: number): Promise<number> {
     if (!database[id]) {
         console.log("addCount: id not found");
@@ -159,22 +174,9 @@ app.get("/api/test", (_req, res) => {
  * access by /api/videos?filter=<source>&search=<search>
  */
 app.get("/api/videos", (req, res) => {
-    const videos: Video[] = [];
-    const _filter = req.query.filter;
-    const filter = Array.isArray(_filter) ? _filter : [_filter];
-    const _search = req.query.search;
-    const search = typeof _search == "string" ? _search.toLowerCase() : "";
-    for (const id in database) {
-        const video = database[id];
-        if (_filter && !filter.includes(video.source)) continue;
-        if (
-            !video.title.toLowerCase().includes(search) &&
-            !video.tags.some((x) => x.toLowerCase().includes(search))
-        )
-            continue;
-        videos.push(video);
-    }
-    res.json(videos);
+    const filter = req.query.filter?.toString().split(",");
+    const search = req.query.search?.toString().toLowerCase() ?? "";
+    res.json(getVideos(search, filter));
 });
 
 /**
@@ -192,11 +194,33 @@ app.get("/api/videos/id/:id", (req, res) => {
 });
 
 /**
+ * GET list of videos in the search results.
+ * filters by source and searches for title and tags.
+ * access by /api/videos/search/<search>?filter=<source>
+ */
+app.get("/api/videos/search/:search", (req, res) => {
+    const search = req.params.search;
+    const filter = req.query.filter?.toString().split(",");
+    res.json(getVideos(search, filter));
+});
+
+/**
  * GET list of sources in the database.
  * access by /api/sources
  */
 app.get("/api/sources", (_req, res) => {
     const sources = new Set(Object.values(database).map((x) => x.source));
+    res.json(Array.from(sources));
+});
+
+/**
+ * GET list of sources in the search results.
+ * access by /api/sources?search=<search>
+ */
+app.get("/api/sources/search/:search", (req, res) => {
+    const search = req.params.search;
+    const videos = getVideos(search);
+    const sources = new Set(videos.map((x) => x.source));
     res.json(Array.from(sources));
 });
 
@@ -210,8 +234,7 @@ app.get("/api/stream/:id", (req, res) => {
         return;
     }
     const id = req.params.id;
-    const _index = req.query.index;
-    const index = typeof _index == "string" ? parseInt(_index) : 0;
+    const index = parseInt(req.query.index?.toString() ?? "0");
     if (!database[id]) {
         res.status(404).end("404 Not Found");
         return;

@@ -1,6 +1,6 @@
 import { useLoaderData } from "react-router-dom";
 import { Video } from "../server/schema";
-import { addCount } from "../server/api";
+import { addCount, deleteVideo } from "../server/api";
 import Sidebar from "../components/sidebar";
 import Tag, { TagAdder } from "../components/tag";
 
@@ -49,6 +49,15 @@ const WatchSidebar = () => {
                     }}
                 >
                     +1
+                </button>
+                <button
+                    type="submit"
+                    name="delete"
+                    onClick={() => {
+                        deleteVideo({ id: video.id });
+                    }}
+                >
+                    delete video
                 </button>
             </div>
             <div>

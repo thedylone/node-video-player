@@ -7,7 +7,7 @@ const Watch = () => {
     if (!video) {
         return (
             <div className="empty">
-                <span>no video</span>
+                <h1>video not found!</h1>
             </div>
         );
     }

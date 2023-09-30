@@ -1,7 +1,8 @@
-import { Link, Form } from "react-router-dom";
+import { Link, Form, useNavigate } from "react-router-dom";
 import styles from "./header.module.css";
 
 const Header = () => {
+    const navigate = useNavigate();
     return (
         <header className={styles.root}>
             <Link to="/">
@@ -11,7 +12,14 @@ const Header = () => {
                     alt="video player logo"
                 />
             </Link>
-            <Form className={styles.search}>
+            <Form
+                className={styles.search}
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    const search = e.currentTarget.search.value;
+                    if (search) navigate(`/search/${search}`);
+                }}
+            >
                 <input
                     className={styles.search_input}
                     type="text"

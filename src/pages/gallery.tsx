@@ -9,7 +9,7 @@ const Gallery = () => {
     if (videos.length === 0) {
         return (
             <div className="empty">
-                <span>no videos</span>
+                <h1>no videos found!</h1>
             </div>
         );
     }
