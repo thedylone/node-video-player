@@ -1,8 +1,15 @@
 import { FC } from "react";
-import styles from "./sidebar.module.css";
+import "./sidebar.css";
 
 const Sidebar: FC<{ children?: React.ReactNode }> = (props) => {
-    return <div className={styles.sidebar}>{props.children}</div>;
+    return (
+        <div
+            className={"flex-col pad-1em no-scrollbar sidebar"}
+            style={{ width: "20em" }}
+        >
+            {props.children}
+        </div>
+    );
 };
 
 export default Sidebar;

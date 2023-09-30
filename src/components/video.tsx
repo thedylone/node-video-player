@@ -1,12 +1,7 @@
 import { FC } from "react";
-import { Link, Form } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Video } from "../server/schema";
-import styles from "./video.module.css";
 import Tag from "./tag";
-
-// const Tag: FC<{ tag: string }> = ({ tag }) => {
-//     return <div className={styles.tag}>{tag}</div>;
-// };
 
 const VideoItem: FC<{ video: Video }> = ({ video }) => {
     let startPreviewTimeout: NodeJS.Timeout;
@@ -32,8 +27,8 @@ const VideoItem: FC<{ video: Video }> = ({ video }) => {
         vid.load();
     };
     return (
-        <div className={styles.container}>
-            <Link className={styles.container_top} to={`/watch?id=${video.id}`}>
+        <div className="flex-col pad-1em">
+            <Link className="flex-col" to={`/watch?id=${video.id}`}>
                 <video
                     src={encodeURI("/api/stream/" + video.id)}
                     poster={encodeURI("/api/thumbnail/" + video.id)}
@@ -41,20 +36,22 @@ const VideoItem: FC<{ video: Video }> = ({ video }) => {
                     preload="none"
                     onMouseEnter={startPreview}
                     onMouseLeave={stopPreview}
+                    style={{ borderRadius: "8px" }}
                 ></video>
-                <div className={styles.title}>{video.title}</div>
+                <div className="title">{video.title}</div>
             </Link>
-            <div className={styles.subtitle}>
-                <span className={styles.source}>{video.source}</span>
-                <span className={styles.counter}>{video.counter}</span>
+            <div
+                className="flex-row"
+                style={{ justifyContent: "space-between" }}
+            >
+                <span className="subtitle">{video.source}</span>
+                <span className="subtitle">{video.counter}</span>
             </div>
-            <div className={styles.container_bottom}>
+            <div className="flex-row">
                 <span>tags:</span>
-                <Form>
-                    {video.tags.map((tag, index) => (
-                        <Tag key={index} id={video.id} tag={tag} />
-                    ))}
-                </Form>
+                {video.tags.map((tag, index) => (
+                    <Tag key={index} id={video.id} tag={tag} />
+                ))}
             </div>
         </div>
     );

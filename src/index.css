@@ -22,14 +22,7 @@ body {
   color: white;
   overflow-y: scroll;
   overflow-x: hidden;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   text-align: center;
-}
-
-body::-webkit-scrollbar {
-  display: none;
 }
 
 code {
@@ -71,4 +64,81 @@ input {
 
 input[type='text'] {
   width: 100%;
+}
+
+input[type='checkbox'], input[type='radio'] {
+  width: 1em;
+  height: 1em;
+  margin: 0 1em 0 0;
+}
+
+label {
+  cursor: pointer;
+}
+
+video {
+  max-width: 100%;
+  max-height: 100%;
+  margin: auto;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.content {
+  display: flex;
+  flex-grow: 1;
+  align-self: stretch;
+  overflow: hidden;
+}
+
+.grid {
+  flex-grow: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  overflow-y: scroll;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  width: 100%;
+  gap: 1em;
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  gap: 1em;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.title {
+  font-size: 1.5em;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.subtitle {
+  font-size: 1em;
+  color: #aaaaaa;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pad-1em {
+  padding: 1em;
 }

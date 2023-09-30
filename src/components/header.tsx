@@ -11,7 +11,7 @@ const Header = () => {
                     alt="video player logo"
                 />
             </Link>
-            <Form className={styles.search} action="/" method="get">
+            <Form className={styles.search}>
                 <input
                     className={styles.search_input}
                     type="text"

@@ -1,9 +1,9 @@
-import { Outlet, useLoaderData } from "react-router-dom";
+import { Outlet, useLoaderData, Form, useSubmit } from "react-router-dom";
 import { Video } from "../server/schema";
-import styles from "./watch.module.css";
 
 const Watch = () => {
     const video = useLoaderData() as Video;
+    const submit = useSubmit();
     if (!video) {
         return (
             <div className="empty">
@@ -12,17 +12,17 @@ const Watch = () => {
         );
     }
     document.title = video.title;
+    const index = new URLSearchParams(location.search).get("index") || 0;
     return (
-        <>
-        <video
-            className={styles.video}
-            src={encodeURI("/api/stream/" + video.id)}
-            poster={encodeURI("/api/thumbnail/" + video.id)}
-            controls
-            preload="metadata"
-        ></video>
-        <Outlet />
-        </>
+        <Form onChange={(e) => submit(e.currentTarget)} className="content">
+            <input type="hidden" name="id" value={video.id} />
+            <video
+                src={encodeURI("/api/stream/" + video.id + "?index=" + index)}
+                controls
+                preload="metadata"
+            ></video>
+            <Outlet />
+        </Form>
     );
 };
 
