@@ -1,4 +1,4 @@
-import { useLoaderData } from "react-router-dom";
+import { Outlet, useLoaderData } from "react-router-dom";
 import { Video } from "../server/schema";
 import styles from "./watch.module.css";
 
@@ -13,13 +13,16 @@ const Watch = () => {
     }
     document.title = video.title;
     return (
+        <>
         <video
             className={styles.video}
-            src={encodeURI("/api/video/" + video.id)}
+            src={encodeURI("/api/stream/" + video.id)}
             poster={encodeURI("/api/thumbnail/" + video.id)}
             controls
             preload="metadata"
         ></video>
+        <Outlet />
+        </>
     );
 };
 

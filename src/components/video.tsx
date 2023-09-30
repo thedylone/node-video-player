@@ -1,11 +1,12 @@
 import { FC } from "react";
-import { Link } from "react-router-dom";
+import { Link, Form } from "react-router-dom";
 import { Video } from "../server/schema";
 import styles from "./video.module.css";
+import Tag from "./tag";
 
-const Tag: FC<{ tag: string }> = ({ tag }) => {
-    return <div className={styles.tag}>{tag}</div>;
-};
+// const Tag: FC<{ tag: string }> = ({ tag }) => {
+//     return <div className={styles.tag}>{tag}</div>;
+// };
 
 const VideoItem: FC<{ video: Video }> = ({ video }) => {
     let startPreviewTimeout: NodeJS.Timeout;
@@ -34,7 +35,7 @@ const VideoItem: FC<{ video: Video }> = ({ video }) => {
         <div className={styles.container}>
             <Link className={styles.container_top} to={`/watch?id=${video.id}`}>
                 <video
-                    src={encodeURI("/api/video/" + video.id)}
+                    src={encodeURI("/api/stream/" + video.id)}
                     poster={encodeURI("/api/thumbnail/" + video.id)}
                     muted
                     preload="none"
@@ -49,9 +50,11 @@ const VideoItem: FC<{ video: Video }> = ({ video }) => {
             </div>
             <div className={styles.container_bottom}>
                 <span>tags:</span>
-                {video.tags.map((tag, index) => (
-                    <Tag key={index} tag={tag} />
-                ))}
+                <Form>
+                    {video.tags.map((tag, index) => (
+                        <Tag key={index} id={video.id} tag={tag} />
+                    ))}
+                </Form>
             </div>
         </div>
     );

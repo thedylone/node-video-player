@@ -1,11 +1,12 @@
 import { Outlet } from "react-router-dom";
 import Header from "../components/header";
+import styles from "./root.module.css";
 
 const Root = () => {
     return (
         <>
             <Header />
-            <div>
+            <div className={styles.content}>
                 <Outlet />
             </div>
         </>

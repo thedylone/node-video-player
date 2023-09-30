@@ -1,0 +1,6 @@
+.content {
+    flex-grow: 1;
+    align-self: stretch;
+    overflow: hidden;
+    display: flex;
+}

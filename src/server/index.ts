@@ -22,6 +22,7 @@ FFmpeg.setFfmpegPath(FFMPEG_PATH);
 FFmpeg.setFfprobePath(FFPROBE_PATH);
 
 export const app = express();
+app.use(express.json());
 app.use(urlencoded({ extended: false }));
 
 const database: { [key: string]: Video } = jsonfile.readFileSync(DB_FILE);
@@ -173,7 +174,7 @@ app.get("/api/videos", (req, res) => {
             continue;
         videos.push(video);
     }
-    res.send(videos);
+    res.json(videos);
 });
 
 /**
@@ -187,7 +188,7 @@ app.get("/api/videos/id/:id", (req, res) => {
         res.status(404).end("404 Not Found");
         return;
     }
-    res.send(database[id]);
+    res.json(database[id]);
 });
 
 /**
@@ -196,15 +197,15 @@ app.get("/api/videos/id/:id", (req, res) => {
  */
 app.get("/api/sources", (_req, res) => {
     const sources = new Set(Object.values(database).map((x) => x.source));
-    res.send(Array.from(sources));
+    res.json(Array.from(sources));
 });
 
 /**
  * GET video data stream
  * index defaults to 0
- * access by /video/<id>?index=<index>
+ * access by /api/stream/<id>?index=<index>
  */
-app.get("/api/video/:id", (req, res) => {
+app.get("/api/stream/:id", (req, res) => {
     if (req.socket.destroyed) {
         return;
     }
@@ -262,7 +263,7 @@ app.get("/api/video/:id", (req, res) => {
 /**
  * GET 'thumbnail' path handler with query of id.
  * returns thumbnail png if found.
- * access by /thumbnail/<id>
+ * access by /api/thumbnail?id=<id>
  */
 app.get("/api/thumbnail/:id", (req, res) => {
     const id = req.params.id;
@@ -283,7 +284,7 @@ app.get("/api/thumbnail/:id", (req, res) => {
 /**
  * POST 'count' path handler. adds to the database's id's counter.
  * returns the new counter.
- * access by /count with body of {id: <id>, num: <num>}
+ * access by /api/count with body of {id: <id>, num: <num>}
  */
 app.post("/api/count", (req, res) => {
     const id: string = req.body.id;
@@ -304,12 +305,12 @@ app.post("/api/count", (req, res) => {
 });
 
 /**
- * POST 'delete' path handler. deletes id and its videos from the directory.
+ * DELETE 'video' path handler. deletes the database's id.
  * returns true if successful, false otherwise.
- * access by /delete with body of {id: <id>}
+ * access by DELETE /api/videos/id/<id>
  */
-app.post("/api/delete", (req, res) => {
-    const id: string = req.body.id;
+app.delete("/api/videos/id/:id", (req, res) => {
+    const id: string = req.params.id;
     if (!id) {
         res.status(400).send("400 Bad Request");
         return;
@@ -331,7 +332,7 @@ app.post("/api/delete", (req, res) => {
 /**
  * POST 'tags' path handler. updates the database's id's tags.
  * returns true if successful, false otherwise.
- * access by /tags with body of {id: <id>, tags: <tags>}
+ * access by /api/tags with body of {id: <id>, tags: <tags>}
  */
 app.post("/api/tags", (req, res) => {
     const id: string = req.body.id;
@@ -351,6 +352,79 @@ app.post("/api/tags", (req, res) => {
         })
         .catch((error) => {
             console.log("/tags catch: " + error);
+            res.status(500).send("500 Internal Server Error");
+        });
+});
+
+/**
+ * POST 'tags/add' path handler. adds a tag to the database's id's tags.
+ * returns true if successful, false otherwise.
+ * access by /tags/add with body of {id: <id>, tag: <tag>}
+ */
+app.post("/api/tag", (req, res) => {
+    const id: string = req.body.id;
+    const tag: string = req.body.tag;
+    if (!id) {
+        res.status(400).send("400 Bad Request");
+        return;
+    }
+    if (!database[id]) {
+        res.status(404).send("404 Not Found");
+        return;
+    }
+    const tags = database[id].tags;
+    if (tags.includes(tag)) {
+        res.status(200).send("200 OK");
+        return;
+    }
+    tags.push(tag);
+    updateTags(id, tags)
+        .then((success) => {
+            if (success) {
+                res.status(200).send("200 OK");
+            } else {
+                res.status(500).send("500 Internal Server Error");
+            }
+        })
+        .catch((error) => {
+            console.log("/tags/add catch: " + error);
+            res.status(500).send("500 Internal Server Error");
+        });
+});
+
+/**
+ * DELETE 'tag' path handler. removes a tag from the database's id's tags.
+ * returns true if successful, false otherwise.
+ * access by DELETE /api/tag with body of {id: <id>, tag: <tag>}
+ */
+app.delete("/api/tag", (req, res) => {
+    const id: string = req.body.id;
+    const tag: string = req.body.tag;
+    if (!id) {
+        res.status(400).send("400 Bad Request");
+        return;
+    }
+    if (!database[id]) {
+        res.status(404).send("404 Not Found");
+        return;
+    }
+    const tags = database[id].tags;
+    if (!tags.includes(tag)) {
+        res.status(200).send("200 OK");
+        return;
+    }
+    const index = tags.indexOf(tag);
+    tags.splice(index, 1);
+    updateTags(id, tags)
+        .then((success) => {
+            if (success) {
+                res.status(200).send("200 OK");
+            } else {
+                res.status(500).send("500 Internal Server Error");
+            }
+        })
+        .catch((error) => {
+            console.log("/tags/remove catch: " + error);
             res.status(500).send("500 Internal Server Error");
         });
 });

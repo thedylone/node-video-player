@@ -1,7 +1,8 @@
-import { useLoaderData } from "react-router-dom";
+import { Outlet, useLoaderData } from "react-router-dom";
 import { Video } from "../server/schema";
 import VideoItem from "../components/video";
 import styles from "./gallery.module.css";
+// import Sidebar from "../components/sidebar";
 
 const Gallery = () => {
     const videos = useLoaderData() as Video[];
@@ -15,11 +16,14 @@ const Gallery = () => {
     }
 
     return (
-        <div className={styles.grid}>
-            {videos.map((video, index) => (
-                <VideoItem key={index} video={video} />
-            ))}
-        </div>
+        <>
+            <div className={styles.grid}>
+                {videos.map((video, index) => (
+                    <VideoItem key={index} video={video} />
+                ))}
+            </div>
+            <Outlet />
+        </>
     );
 };
 

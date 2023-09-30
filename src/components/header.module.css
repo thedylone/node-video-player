@@ -32,14 +32,15 @@
     background: black;
     border: 1px solid black;
     padding: 0 5px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
 }
 
 .search_button {
-    cursor: pointer;
     height: 100%;
     aspect-ratio: 1;
-    background: #2f2f2f;
-    border: 1px solid black;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
 }
 
 .sidebar_button {
