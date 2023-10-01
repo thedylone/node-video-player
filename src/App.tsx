@@ -6,11 +6,11 @@ import Gallery from "./pages/gallery";
 import GallerySidebar from "./pages/gallery-sidebar";
 import Watch from "./pages/watch";
 import {
-    fetchVideos,
-    fetchVideo,
-    fetchSources,
-    fetchVideosSearch,
-    fetchSourcesSearch,
+    videoLoader,
+    videosSearchLoader,
+    videosLoader,
+    sourcesLoader,
+    sourcesSearchLoader,
 } from "./server/api";
 import WatchSidebar from "./pages/watch-sidebar";
 
@@ -21,38 +21,45 @@ const router = createBrowserRouter([
         errorElement: <ErrorPage />,
         children: [
             {
-                path: "/",
-                element: <Gallery />,
-                loader: fetchVideos,
+                errorElement: <ErrorPage />,
                 children: [
                     {
                         path: "/",
-                        element: <GallerySidebar />,
-                        loader: fetchSources,
+                        element: <Gallery />,
+                        errorElement: <ErrorPage />,
+                        loader: videosLoader,
+                        children: [
+                            {
+                                path: "/",
+                                element: <GallerySidebar />,
+                                errorElement: <ErrorPage />,
+                                loader: sourcesLoader,
+                            },
+                        ],
                     },
-                ],
-            },
-            {
-                path: "/search/:query",
-                element: <Gallery />,
-                loader: fetchVideosSearch,
-                children: [
                     {
                         path: "/search/:query",
-                        element: <GallerySidebar />,
-                        loader: fetchSourcesSearch,
+                        element: <Gallery />,
+                        loader: videosSearchLoader,
+                        children: [
+                            {
+                                path: "/search/:query",
+                                element: <GallerySidebar />,
+                                loader: sourcesSearchLoader,
+                            },
+                        ],
                     },
-                ],
-            },
-            {
-                path: "/watch",
-                element: <Watch />,
-                loader: fetchVideo,
-                children: [
                     {
                         path: "/watch",
-                        element: <WatchSidebar />,
-                        loader: fetchVideo,
+                        element: <Watch />,
+                        loader: videoLoader,
+                        children: [
+                            {
+                                path: "/watch",
+                                element: <WatchSidebar />,
+                                loader: videoLoader,
+                            },
+                        ],
                     },
                 ],
             },

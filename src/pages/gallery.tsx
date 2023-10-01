@@ -1,28 +1,38 @@
-import { Outlet, useLoaderData, Form, useSubmit } from "react-router-dom";
+import { Outlet, useLoaderData, Await } from "react-router-dom";
 import { Video } from "../server/schema";
+import Content from "../components/content";
 import VideoItem from "../components/video";
 
-const Gallery = () => {
-    const videos = useLoaderData() as Video[];
-    const submit = useSubmit();
-    document.title = "Video Player";
+const videosToContent = (videos: Video[]) => {
     if (videos.length === 0) {
-        return (
-            <div className="empty">
-                <h1>no videos found!</h1>
-            </div>
-        );
+        return <div className="empty">no videos found!</div>;
     }
-
     return (
-        <Form onChange={(e) => submit(e.currentTarget)} className="content">
+        <>
             <div className="grid">
                 {videos.map((video, index) => (
                     <VideoItem key={index} video={video} />
                 ))}
             </div>
             <Outlet />
-        </Form>
+        </>
+    );
+};
+
+const Gallery = () => {
+    const data = useLoaderData() as { videos: Video[] };
+    document.title = "Video Player";
+    return (
+        <Content>
+            <Await
+                resolve={data.videos}
+                errorElement={
+                    <div className="empty">error loading videos!</div>
+                }
+            >
+                {videosToContent}
+            </Await>
+        </Content>
     );
 };
 

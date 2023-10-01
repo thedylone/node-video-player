@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, Suspense } from "react";
 import "./sidebar.css";
 
 const Sidebar: FC<{ children?: React.ReactNode }> = (props) => {
@@ -7,7 +7,9 @@ const Sidebar: FC<{ children?: React.ReactNode }> = (props) => {
             className={"flex-col pad-1em no-scrollbar sidebar"}
             style={{ width: "20em" }}
         >
-            {props.children}
+            <Suspense fallback={<div className="empty">loading...</div>}>
+                {props.children}
+            </Suspense>
         </div>
     );
 };

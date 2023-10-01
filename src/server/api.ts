@@ -1,3 +1,4 @@
+import { defer } from "react-router-dom";
 import { Video } from "./schema";
 
 export const fetchVideos = async ({
@@ -123,4 +124,33 @@ export const removeTag = async ({
     if (!response.ok) {
         throw new Error(response.statusText);
     }
+};
+
+export const videosLoader = async ({ request }: { request: Request }) => {
+    const videos = fetchVideos({ request: request });
+    return defer({ videos: videos });
+};
+
+export const videosSearchLoader = async ({ request }: { request: Request }) => {
+    const videos = fetchVideosSearch({ request: request });
+    return defer({ videos: videos });
+};
+
+export const videoLoader = async ({ request }: { request: Request }) => {
+    const video = fetchVideo({ request: request });
+    return defer({ video: video });
+};
+
+export const sourcesLoader = async () => {
+    const sources = fetchSources();
+    return defer({ sources: sources });
+};
+
+export const sourcesSearchLoader = async ({
+    request,
+}: {
+    request: Request;
+}) => {
+    const sources = fetchSourcesSearch({ request: request });
+    return defer({ sources: sources });
 };

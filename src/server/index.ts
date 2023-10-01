@@ -199,7 +199,7 @@ app.get("/api/videos/id/:id", (req, res) => {
  * access by /api/videos/search/<search>?filter=<source>
  */
 app.get("/api/videos/search/:search", (req, res) => {
-    const search = req.params.search;
+    const search = req.params.search.toLowerCase();
     const filter = req.query.filter?.toString().split(",");
     res.json(getVideos(search, filter));
 });
@@ -218,7 +218,7 @@ app.get("/api/sources", (_req, res) => {
  * access by /api/sources?search=<search>
  */
 app.get("/api/sources/search/:search", (req, res) => {
-    const search = req.params.search;
+    const search = req.params.search.toLowerCase();
     const videos = getVideos(search);
     const sources = new Set(videos.map((x) => x.source));
     res.json(Array.from(sources));

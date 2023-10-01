@@ -10,21 +10,21 @@ const Tag: FC<{ id: string; tag: string }> = ({ id, tag }) => {
                 className={styles.input}
                 defaultValue={tag}
                 disabled={tag !== ""}
-                onBlur={(e) => {
+                onBlur={async (e) => {
                     const newTag = e.target.value;
                     if (newTag === "") {
                         return;
                     }
-                    removeTag({ id, tag: "" });
-                    addTag({ id, tag: newTag });
+                    await removeTag({ id, tag: "" });
+                    await addTag({ id, tag: newTag });
                     e.target.disabled = true;
                 }}
             />
             <button
                 type="submit"
                 className={styles.remove}
-                onClick={() => {
-                    removeTag({ id, tag });
+                onClick={async () => {
+                    await removeTag({ id, tag });
                 }}
             >
                 ✕
@@ -37,8 +37,8 @@ export const TagAdder: FC<{ id: string }> = ({ id }) => {
     return (
         <button
             type="submit"
-            onClick={() => {
-                addTag({ id: id, tag: "" });
+            onClick={async () => {
+                await addTag({ id: id, tag: "" });
             }}
         >
             +

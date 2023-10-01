@@ -1,10 +1,9 @@
-import { useLoaderData } from "react-router-dom";
+import { useLoaderData, Await } from "react-router-dom";
 import Sidebar from "../components/sidebar";
 
-const GallerySidebar = () => {
-    const sources = useLoaderData() as string[];
+const sourcesToContent = (sources: string[]) => {
     return (
-        <Sidebar>
+        <>
             <h2>Sources</h2>
             <div className="flex-col">
                 {sources.map((source, index) => (
@@ -14,6 +13,22 @@ const GallerySidebar = () => {
                     </label>
                 ))}
             </div>
+        </>
+    );
+};
+
+const GallerySidebar = () => {
+    const data = useLoaderData() as { sources: string[] };
+    return (
+        <Sidebar>
+            <Await
+                resolve={data.sources}
+                errorElement={
+                    <div className="empty">error loading sources!</div>
+                }
+            >
+                {sourcesToContent}
+            </Await>
         </Sidebar>
     );
 };
