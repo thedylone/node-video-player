@@ -1,5 +1,5 @@
 .root {
-    height: 5em;
+    height: var(--header-height);
     background: #202020;
     position: sticky;
     top: 0;
@@ -7,22 +7,32 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1em;
+    z-index: 2;
+    border: 1px solid black;
 }
 
 .root>* {
     height: 100%;
+    flex-basis: 5em;
+    flex-grow: 1;
 }
 
 .logo {
     height: 100%;
 }
 
+.logo_small {
+    display: none;
+}
+
 .search {
     height: 3em;
     display: flex;
     flex-basis: 25em;
+    flex-grow: 1;
     align-items: center;
-    margin: 0 15px;
+    margin: 0 1em;
 }
 
 .search_input {
@@ -46,13 +56,19 @@
     display: none;
     cursor: pointer;
     height: 100%;
-    aspect-ratio: 1;
     background: none;
     border: none;
-    font-size: 2em;
 }
 
 @media screen and (max-width: 768px) {
+    .logo_large {
+        display: none;
+    }
+
+    .logo_small {
+        display: block;
+    }
+
     .sidebar_button {
         display: block;
     }

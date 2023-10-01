@@ -36,7 +36,10 @@ const VideoItem: FC<{ video: Video }> = ({ video }) => {
                     preload="none"
                     onMouseEnter={startPreview}
                     onMouseLeave={stopPreview}
-                    style={{ borderRadius: "8px" }}
+                    style={{
+                        borderRadius: "8px",
+                        width: "480px",
+                    }}
                 ></video>
                 <div className="title">{video.title}</div>
             </Link>

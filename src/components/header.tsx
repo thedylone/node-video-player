@@ -1,14 +1,24 @@
 import { Link, Form, useNavigate } from "react-router-dom";
 import styles from "./header.module.css";
 
+const toggleSidebar = () => {
+    // add "active" class to sidebar
+    document.getElementById("sidebar")?.classList.toggle("active");
+};
+
 const Header = () => {
     const navigate = useNavigate();
     return (
         <header className={styles.root}>
-            <Link to="/">
+            <Link to="/" style={{ textAlign: "left" }}>
                 <img
-                    className={styles.logo}
+                    className={styles.logo + " " + styles.logo_large}
                     src="/images/head_l.png"
+                    alt="video player logo"
+                />
+                <img
+                    className={styles.logo + " " + styles.logo_small}
+                    src="/images/head_s.png"
                     alt="video player logo"
                 />
             </Link>
@@ -32,8 +42,13 @@ const Header = () => {
                     &#x1F50E;&#xFE0E;
                 </button>
             </Form>
-            <div>
-                <button className={styles.sidebar_button}>☰</button>
+            <div style={{ display: "flex", justifyContent: "end" }}>
+                <button
+                    className={styles.sidebar_button}
+                    onClick={toggleSidebar}
+                >
+                    ☰
+                </button>
             </div>
         </header>
     );
