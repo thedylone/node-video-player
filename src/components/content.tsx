@@ -10,6 +10,7 @@ const Content: FC<{ children?: React.ReactNode }> = (props) => {
             className={
                 "content" + (navigation.state === "loading" ? " loading" : "")
             }
+            replace
         >
             <Suspense fallback={<div className="empty">loading...</div>}>
                 {props.children}
