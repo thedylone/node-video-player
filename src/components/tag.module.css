@@ -1,0 +1,24 @@
+.tag {
+    display: inline-flex;
+    max-width: 6em;
+}
+
+.input {
+    overflow: ellipsis;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.remove {
+    font-size: 0.5em;
+    cursor: pointer;
+    color: #aaaaaa;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.remove:hover {
+    color: #ffffff;
+}

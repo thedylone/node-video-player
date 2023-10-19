@@ -1,0 +1,24 @@
+.sidebar {
+  height: 100%;
+  width: var(--sidebar-width) !important;
+  background: #212121;
+  overflow-wrap: break-word;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  text-align: left;
+}
+
+@media screen and (max-width: 768px) {
+  .sidebar {
+    position: absolute;
+    z-index: 1;
+    right: -100%;
+    height: calc(100% - var(--header-height));
+
+  }
+
+  .sidebar.active {
+    right: 0;
+    box-shadow: 0 0 var(--header-height) var(--header-height) black;
+  }
+}
