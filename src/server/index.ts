@@ -13,13 +13,14 @@ const FFPROBE_PATH = process.env.FFPROBE_PATH;
 const DB_FILE = process.env.DB_FILE ?? "/db.json";
 const DIRECTORY = process.env.DIRECTORY ?? "/videos";
 
+let ffmpegExists = false;
 if (!FFMPEG_PATH || !FFPROBE_PATH) {
-    process.stderr.write("ffmpeg path not found\n");
-    process.exit(1);
+    process.stderr.write("ffmpeg path not found: thumbnails not generated\n");
+} else {
+    FFmpeg.setFfmpegPath(FFMPEG_PATH);
+    FFmpeg.setFfprobePath(FFPROBE_PATH);
+    ffmpegExists = true;
 }
-
-FFmpeg.setFfmpegPath(FFMPEG_PATH);
-FFmpeg.setFfprobePath(FFPROBE_PATH);
 
 export const app = express();
 app.use(express.json());
@@ -65,7 +66,7 @@ const addDirToDatabase = async () => {
             const files = await fsp.readdir(titlePath);
             const vids = files.filter((x) => x.endsWith(".mp4"));
             if (!vids.length) continue;
-            if (files.length == vids.length)
+            if (files.length == vids.length && ffmpegExists)
                 generateThumbnail(source, title, vids[0]);
             if (current.includes([source, title].join("/"))) continue;
             const id = nanoid(12);
@@ -133,6 +134,7 @@ async function deleteTitle(id: string): Promise<boolean> {
     const success = await fsp
         .rm([DIRECTORY, source, title].join("/"), {
             recursive: true,
+            force: true,
         })
         .then(() => {
             delete database[id];
