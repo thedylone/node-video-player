@@ -13,13 +13,14 @@ const FFPROBE_PATH = process.env.FFPROBE_PATH;
 const DB_FILE = process.env.DB_FILE ?? "/db.json";
 const DIRECTORY = process.env.DIRECTORY ?? "/videos";
 
+let ffmpegExists = false;
 if (!FFMPEG_PATH || !FFPROBE_PATH) {
-    console.log("ffmpeg path not found");
-    process.exit(1);
+    process.stderr.write("ffmpeg path not found: thumbnails not generated\n");
+} else {
+    FFmpeg.setFfmpegPath(FFMPEG_PATH);
+    FFmpeg.setFfprobePath(FFPROBE_PATH);
+    ffmpegExists = true;
 }
-
-FFmpeg.setFfmpegPath(FFMPEG_PATH);
-FFmpeg.setFfprobePath(FFPROBE_PATH);
 
 export const app = express();
 app.use(express.json());
@@ -41,9 +42,9 @@ const generateThumbnail = (source: string, title: string, vid: string) => {
         )
         .on("error", (err, stdout, stderr) => {
             if (err) {
-                console.log(err.message);
-                console.log("stdout:\n" + stdout);
-                console.log("stderr:\n" + stderr);
+                process.stderr.write(err.message + "\n");
+                process.stderr.write("stdout:\n" + stdout + "\n");
+                process.stderr.write("stderr:\n" + stderr + "\n");
             }
         });
 };
@@ -65,7 +66,7 @@ const addDirToDatabase = async () => {
             const files = await fsp.readdir(titlePath);
             const vids = files.filter((x) => x.endsWith(".mp4"));
             if (!vids.length) continue;
-            if (files.length == vids.length)
+            if (files.length == vids.length && ffmpegExists)
                 generateThumbnail(source, title, vids[0]);
             if (current.includes([source, title].join("/"))) continue;
             const id = nanoid(12);
@@ -94,10 +95,9 @@ const pruneDatabase = (exists: string[]) => {
 const updateDatabase = async () => {
     const exists = await addDirToDatabase();
     pruneDatabase(exists);
-    jsonfile
-        .writeFile(DB_FILE, database)
-        .then(() => console.log("write complete"));
-    setTimeout(updateDatabase, 1000 * 60);
+    jsonfile.writeFile(DB_FILE, database).then(() => {
+        process.stdout.write("database updated\n");
+    });
 };
 
 const getVideos = (search: string, filter?: string[]) => {
@@ -117,19 +117,16 @@ const getVideos = (search: string, filter?: string[]) => {
 
 async function addCount(id: string, num: number): Promise<number> {
     if (!database[id]) {
-        console.log("addCount: id not found");
+        process.stderr.write("addCount: id not found\n");
         return -1;
     }
     database[id].counter += num;
-    jsonfile
-        .writeFile(DB_FILE, database)
-        .then(() => console.log("write complete"));
     return database[id].counter;
 }
 
 async function deleteTitle(id: string): Promise<boolean> {
     if (!database[id]) {
-        console.log("deleteTitle: id not found");
+        process.stderr.write("deleteTitle: id not found\n");
         return false;
     }
     const source = database[id].source;
@@ -137,31 +134,23 @@ async function deleteTitle(id: string): Promise<boolean> {
     const success = await fsp
         .rm([DIRECTORY, source, title].join("/"), {
             recursive: true,
+            force: true,
         })
         .then(() => {
             delete database[id];
-            console.log("delete complete");
-        }, console.log);
+            process.stdout.write("delete complete\n");
+        });
     if (success == undefined) return true;
     return false;
 }
 
 async function updateTags(id: string, tags: string[]): Promise<boolean> {
     if (!database[id]) {
-        console.log("updateTags: id not found");
+        process.stderr.write("updateTags: id not found\n");
         return false;
     }
     database[id].tags = tags;
-    return jsonfile.writeFile(DB_FILE, database).then(
-        () => {
-            console.log("write complete");
-            return true;
-        },
-        (error) => {
-            console.log(error);
-            return false;
-        }
-    );
+    return true;
 }
 
 app.get("/api/test", (_req, res) => {
@@ -248,7 +237,7 @@ app.get("/api/stream/:id", (req, res) => {
     try {
         videoStat = fs.statSync(videoPath);
     } catch (error) {
-        console.log(error);
+        process.stderr.write("stream: " + error + "\n");
     }
     if (!videoStat) {
         res.status(404).end("404 Not Found");
@@ -322,7 +311,7 @@ app.post("/api/count", (req, res) => {
             res.end(count.toString());
         })
         .catch((error) => {
-            console.log(error);
+            process.stderr.write(error + "\n");
             res.status(500).send("500 Internal Server Error");
         });
 });
@@ -347,7 +336,7 @@ app.delete("/api/videos/id/:id", (req, res) => {
             }
         })
         .catch((error) => {
-            console.log("/delete catch: " + error);
+            process.stderr.write("/delete catch: " + error + "\n");
             res.status(500).send("500 Internal Server Error");
         });
 });
@@ -374,7 +363,7 @@ app.post("/api/tags", (req, res) => {
             }
         })
         .catch((error) => {
-            console.log("/tags catch: " + error);
+            process.stderr.write("/tags catch: " + error + "\n");
             res.status(500).send("500 Internal Server Error");
         });
 });
@@ -410,7 +399,7 @@ app.post("/api/tag", (req, res) => {
             }
         })
         .catch((error) => {
-            console.log("/tags/add catch: " + error);
+            process.stderr.write("/tags/add catch: " + error + "\n");
             res.status(500).send("500 Internal Server Error");
         });
 });
@@ -447,12 +436,28 @@ app.delete("/api/tag", (req, res) => {
             }
         })
         .catch((error) => {
-            console.log("/tags/remove catch: " + error);
+            process.stderr.write("/tags/remove catch: " + error + "\n");
             res.status(500).send("500 Internal Server Error");
         });
 });
 
-updateDatabase();
+const start = async () => {
+    process.stdout.write("server started\n");
+    const startTime = new Date().getTime();
+    // show uptime in hh:mm:ss and update every second by clearing the line
+    setInterval(() => {
+        const currentTime = Date.now();
+        const uptime = currentTime - startTime;
+        process.stdout.clearLine(0);
+        process.stdout.cursorTo(0);
+        const secs = String(Math.floor(uptime / 1000) % 60).padStart(2, "0");
+        const mins = String(Math.floor(uptime / 60000) % 60).padStart(2, "0");
+        const hours = String(Math.floor(uptime / 3600000)).padStart(2, "0");
+        process.stdout.write(`uptime: ${hours}:${mins}:${secs}\t`);
+    }, 1000);
+    updateDatabase();
+    setInterval(updateDatabase, 60000);
+};
 
 if (!process.env["VITE"]) {
     const frontendFiles = process.cwd() + "/dist";
@@ -462,3 +467,5 @@ if (!process.env["VITE"]) {
     });
     app.listen(process.env["PORT"]);
 }
+
+start();

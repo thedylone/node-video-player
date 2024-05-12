@@ -1,4 +1,4 @@
-import { Await, redirect, useLoaderData } from "react-router-dom";
+import { Await, useLoaderData } from "react-router-dom";
 import { Video } from "../server/schema";
 import { addCount, deleteVideo } from "../server/api";
 import Sidebar from "../components/sidebar";
@@ -52,8 +52,8 @@ const videoToContent = (video: Video) => (
                 type="submit"
                 name="delete"
                 onClick={async () => {
+                    location.href = "/";
                     await deleteVideo({ id: video.id });
-                    redirect("/");
                 }}
             >
                 delete video
