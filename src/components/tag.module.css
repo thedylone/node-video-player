@@ -1,6 +1,7 @@
 .tag {
     display: inline-flex;
-    max-width: 6em;
+    max-width: 8em;
+    flex: 1 0 5em;
 }
 
 .input {

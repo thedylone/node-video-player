@@ -9,6 +9,7 @@ const Tag: FC<{ id: string; tag: string }> = ({ id, tag }) => {
                 type="text"
                 className={styles.input}
                 defaultValue={tag}
+                title={tag || "Type to add a tag"}
                 disabled={tag !== ""}
                 onBlur={async (e) => {
                     const newTag = e.target.value;

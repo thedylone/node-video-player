@@ -1,9 +1,9 @@
 :root {
   --header-height: 5em;
-  --sidebar-width: 20em;
+  --sidebar-width: 18em;
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 840px) {
   :root {
     --sidebar-width: calc(100% - 5em);
   }
@@ -118,7 +118,7 @@ video {
 }
 
 .grid {
-  flex-grow: 1;
+  flex: 1 0 calc(100% - var(--sidebar-width));
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   overflow-y: scroll;
