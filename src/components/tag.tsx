@@ -1,8 +1,10 @@
 import { FC } from "react";
 import { addTag, removeTag } from "../server/api";
 import styles from "./tag.module.css";
+import { useNavigate } from "react-router-dom";
 
 const Tag: FC<{ id: string; tag: string }> = ({ id, tag }) => {
+    const navigate = useNavigate();
     return (
         <div className={styles.tag}>
             <input
@@ -10,7 +12,7 @@ const Tag: FC<{ id: string; tag: string }> = ({ id, tag }) => {
                 className={styles.input}
                 defaultValue={tag}
                 title={tag || "Type to add a tag"}
-                disabled={tag !== ""}
+                readOnly={tag !== ""}
                 onBlur={async (e) => {
                     const newTag = e.target.value;
                     if (newTag === "") {
@@ -18,7 +20,10 @@ const Tag: FC<{ id: string; tag: string }> = ({ id, tag }) => {
                     }
                     await removeTag({ id, tag: "" });
                     await addTag({ id, tag: newTag });
-                    e.target.disabled = true;
+                    e.target.readOnly = true;
+                }}
+                onClick={(e) => {
+                    if (e.currentTarget.readOnly) navigate(`/search/${e.currentTarget.value}`);
                 }}
             />
             <button

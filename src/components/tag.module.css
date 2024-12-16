@@ -12,6 +12,10 @@
     border-bottom-right-radius: 0;
 }
 
+.input:read-only {
+    cursor: pointer;
+}
+
 .remove {
     font-size: 0.5em;
     cursor: pointer;
