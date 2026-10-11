@@ -1,11 +1,17 @@
 import { FC } from "react";
-import { Await, useLoaderData, useRevalidator } from "react-router-dom";
+import {
+    Await,
+    useLoaderData,
+    useNavigate,
+    useRevalidator,
+} from "react-router-dom";
 import { Video } from "../server/schema";
 import { addCount, deleteVideo } from "../server/api";
 import Sidebar from "../components/sidebar";
 import Tag, { TagAdder } from "../components/tag";
 
 const VideoDetails: FC<{ video: Video }> = ({ video }) => {
+    const navigate = useNavigate();
     const revalidator = useRevalidator();
     // reload only after the change is saved, so the reload can't return the
     // old value. a newer reload cancels an older one, so the last one wins.
@@ -46,8 +52,15 @@ const VideoDetails: FC<{ video: Video }> = ({ video }) => {
                 <button
                     type="button"
                     onClick={async () => {
-                        location.href = "/";
-                        await deleteVideo({ id: video.id });
+                        const message = `Delete "${video.title}"? This deletes its folder from disk.`;
+                        if (!confirm(message)) return;
+                        try {
+                            await deleteVideo({ id: video.id });
+                        } catch (error) {
+                            alert("Could not delete the video: " + error);
+                            return;
+                        }
+                        navigate("/");
                     }}
                 >
                     delete video
