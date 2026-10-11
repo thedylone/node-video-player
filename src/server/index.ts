@@ -452,17 +452,20 @@ app.delete("/api/tag", (req, res) => {
 const start = async () => {
     process.stdout.write("server started\n");
     const startTime = new Date().getTime();
-    // show uptime in hh:mm:ss and update every second by clearing the line
-    setInterval(() => {
-        const currentTime = Date.now();
-        const uptime = currentTime - startTime;
-        process.stdout.clearLine(0);
-        process.stdout.cursorTo(0);
-        const secs = String(Math.floor(uptime / 1000) % 60).padStart(2, "0");
-        const mins = String(Math.floor(uptime / 60000) % 60).padStart(2, "0");
-        const hours = String(Math.floor(uptime / 3600000)).padStart(2, "0");
-        process.stdout.write(`uptime: ${hours}:${mins}:${secs}\t`);
-    }, 1000);
+    // show uptime in hh:mm:ss and update every second by clearing the line.
+    // only on a terminal: clearLine and cursorTo don't exist when piped
+    if (process.stdout.isTTY) {
+        setInterval(() => {
+            const currentTime = Date.now();
+            const uptime = currentTime - startTime;
+            process.stdout.clearLine(0);
+            process.stdout.cursorTo(0);
+            const secs = String(Math.floor(uptime / 1000) % 60).padStart(2, "0");
+            const mins = String(Math.floor(uptime / 60000) % 60).padStart(2, "0");
+            const hours = String(Math.floor(uptime / 3600000)).padStart(2, "0");
+            process.stdout.write(`uptime: ${hours}:${mins}:${secs}\t`);
+        }, 1000);
+    }
     updateDatabase();
     setInterval(updateDatabase, 60000);
 };
