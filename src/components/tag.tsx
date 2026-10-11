@@ -1,10 +1,11 @@
 import { FC } from "react";
 import { addTag, removeTag } from "../server/api";
 import styles from "./tag.module.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useRevalidator } from "react-router-dom";
 
 const Tag: FC<{ id: string; tag: string }> = ({ id, tag }) => {
     const navigate = useNavigate();
+    const revalidator = useRevalidator();
     return (
         <div className={styles.tag}>
             <input
@@ -21,16 +22,18 @@ const Tag: FC<{ id: string; tag: string }> = ({ id, tag }) => {
                     await removeTag({ id, tag: "" });
                     await addTag({ id, tag: newTag });
                     e.target.readOnly = true;
+                    revalidator.revalidate();
                 }}
                 onClick={(e) => {
                     if (e.currentTarget.readOnly) navigate(`/search/${e.currentTarget.value}`);
                 }}
             />
             <button
-                type="submit"
+                type="button"
                 className={styles.remove}
                 onClick={async () => {
                     await removeTag({ id, tag });
+                    revalidator.revalidate();
                 }}
             >
                 ✕
@@ -40,11 +43,13 @@ const Tag: FC<{ id: string; tag: string }> = ({ id, tag }) => {
 };
 
 export const TagAdder: FC<{ id: string }> = ({ id }) => {
+    const revalidator = useRevalidator();
     return (
         <button
-            type="submit"
+            type="button"
             onClick={async () => {
                 await addTag({ id: id, tag: "" });
+                revalidator.revalidate();
             }}
         >
             +
