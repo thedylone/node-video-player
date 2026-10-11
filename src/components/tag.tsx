@@ -25,7 +25,10 @@ const Tag: FC<{ id: string; tag: string }> = ({ id, tag }) => {
                     revalidator.revalidate();
                 }}
                 onClick={(e) => {
-                    if (e.currentTarget.readOnly) navigate(`/search/${e.currentTarget.value}`);
+                    if (e.currentTarget.readOnly) {
+                        const search = encodeURIComponent(e.currentTarget.value);
+                        navigate(`/search/${search}`);
+                    }
                 }}
             />
             <button
