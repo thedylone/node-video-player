@@ -60,8 +60,8 @@ const generateThumbnail = (source: string, title: string, vid: string) => {
 
 const addDirToDatabase = async () => {
     const exists = [];
-    const current = Object.values(database).map(
-        (x) => x.source + "/" + x.title
+    const current = new Map(
+        Object.values(database).map((x) => [x.source + "/" + x.title, x.id])
     );
     const sources = (await fsp.readdir(DIRECTORY, { withFileTypes: true }))
         .filter((dirent) => dirent.isDirectory())
@@ -75,11 +75,16 @@ const addDirToDatabase = async () => {
             exists.push([source, title].join("/"));
             const titlePath = [sourcePath, title].join("/");
             const files = await fsp.readdir(titlePath);
-            const vids = files.filter((x) => x.endsWith(".mp4"));
+            const vids = files
+                .filter((x) => x.endsWith(".mp4"))
+                .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+            // existing title: refresh its videos, keeping counter and tags
+            const currentId = current.get([source, title].join("/"));
+            if (currentId) database[currentId].vids = vids;
             if (!vids.length) continue;
             if (files.length == vids.length && ffmpegExists)
                 generateThumbnail(source, title, vids[0]);
-            if (current.includes([source, title].join("/"))) continue;
+            if (currentId) continue;
             const id = nanoid(12);
             database[id] = {
                 id: id,
