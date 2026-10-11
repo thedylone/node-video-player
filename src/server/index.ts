@@ -63,7 +63,9 @@ const addDirToDatabase = async () => {
     const current = Object.values(database).map(
         (x) => x.source + "/" + x.title
     );
-    const sources = await fsp.readdir(DIRECTORY);
+    const sources = (await fsp.readdir(DIRECTORY, { withFileTypes: true }))
+        .filter((dirent) => dirent.isDirectory())
+        .map((dirent) => dirent.name);
     for (const source of sources) {
         const sourcePath = [DIRECTORY, source].join("/");
         const titles = (await fsp.readdir(sourcePath, { withFileTypes: true }))
@@ -101,12 +103,19 @@ const pruneDatabase = (exists: string[]) => {
     }
 };
 
+/**
+ * scans DIRECTORY, prunes missing titles and saves the database.
+ * never rejects: errors are logged so a failed scan can't crash the server.
+ */
 const updateDatabase = async () => {
-    const exists = await addDirToDatabase();
-    pruneDatabase(exists);
-    jsonfile.writeFile(DB_FILE, database).then(() => {
+    try {
+        const exists = await addDirToDatabase();
+        pruneDatabase(exists);
+        await jsonfile.writeFile(DB_FILE, database);
         process.stdout.write("database updated\n");
-    });
+    } catch (error) {
+        process.stderr.write("updateDatabase: " + error + "\n");
+    }
 };
 
 const getVideos = (search: string, filter?: string[]) => {
