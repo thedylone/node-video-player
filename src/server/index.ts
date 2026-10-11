@@ -601,13 +601,19 @@ app.delete("/api/tag", (req, res) => {
         });
 });
 
-const start = async () => {
+/**
+ * starts the uptime ticker and the database scan.
+ * returns a function that stops them, used by the vite dev plugin when it
+ * reloads this module.
+ */
+export const start = () => {
     process.stdout.write("server started\n");
+    const intervals: NodeJS.Timeout[] = [];
     const startTime = new Date().getTime();
     // show uptime in hh:mm:ss and update every second by clearing the line.
     // only on a terminal: clearLine and cursorTo don't exist when piped
     if (process.stdout.isTTY) {
-        setInterval(() => {
+        const ticker = setInterval(() => {
             const currentTime = Date.now();
             const uptime = currentTime - startTime;
             process.stdout.clearLine(0);
@@ -617,9 +623,11 @@ const start = async () => {
             const hours = String(Math.floor(uptime / 3600000)).padStart(2, "0");
             process.stdout.write(`uptime: ${hours}:${mins}:${secs}\t`);
         }, 1000);
+        intervals.push(ticker);
     }
     updateDatabase();
-    setInterval(updateDatabase, 60000);
+    intervals.push(setInterval(updateDatabase, 60000));
+    return () => intervals.forEach(clearInterval);
 };
 
 if (!process.env["VITE"]) {
@@ -632,6 +640,6 @@ if (!process.env["VITE"]) {
     app.listen(port, () => {
         process.stdout.write(`listening on http://localhost:${port}\n`);
     });
+    // in dev, express-plugin.ts calls start() instead
+    start();
 }
-
-start();
