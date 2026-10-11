@@ -32,7 +32,14 @@ const loadDatabase = (): { [key: string]: Video } => {
         process.stdout.write(DB_FILE + " not found: starting with empty database\n");
         return {};
     }
-    return jsonfile.readFileSync(DB_FILE);
+    const db: { [key: string]: Video } = jsonfile.readFileSync(DB_FILE);
+    // drop empty or non-string tags saved before tags were validated
+    for (const video of Object.values(db)) {
+        video.tags = (video.tags ?? []).filter(
+            (tag) => typeof tag === "string" && tag.trim()
+        );
+    }
+    return db;
 };
 
 const database = loadDatabase();
@@ -123,14 +130,37 @@ const updateDatabase = async () => {
     }
 };
 
+/**
+ * returns the video with this id, or undefined.
+ * only own keys count, so ids like "__proto__" can't reach Object.prototype.
+ */
+const getVideo = (id: unknown): Video | undefined => {
+    if (typeof id !== "string") return undefined;
+    if (!Object.prototype.hasOwnProperty.call(database, id)) return undefined;
+    return database[id];
+};
+
+/** returns the trimmed tag, or undefined if it is not a non-empty string. */
+const parseTag = (tag: unknown): string | undefined => {
+    if (typeof tag !== "string") return undefined;
+    return tag.trim() || undefined;
+};
+
+/** returns num as an integer (numeric strings allowed), or undefined. */
+const parseNum = (num: unknown): number | undefined => {
+    const value = typeof num === "string" && num.trim() ? Number(num) : num;
+    return Number.isInteger(value) ? (value as number) : undefined;
+};
+
 const getVideos = (search: string, filter?: string[]) => {
     const videos: Video[] = [];
-    for (const id in database) {
-        const video = database[id];
+    for (const video of Object.values(database)) {
         if (filter && !filter.includes(video.source)) continue;
         if (
             !video.title.toLowerCase().includes(search) &&
-            !video.tags.some((x) => x.toLowerCase().includes(search))
+            !video.tags.some(
+                (x) => typeof x === "string" && x.toLowerCase().includes(search)
+            )
         )
             continue;
         videos.push(video);
@@ -139,7 +169,7 @@ const getVideos = (search: string, filter?: string[]) => {
 };
 
 async function addCount(id: string, num: number): Promise<number> {
-    if (!database[id]) {
+    if (!getVideo(id)) {
         process.stderr.write("addCount: id not found\n");
         return -1;
     }
@@ -148,7 +178,7 @@ async function addCount(id: string, num: number): Promise<number> {
 }
 
 async function deleteTitle(id: string): Promise<boolean> {
-    if (!database[id]) {
+    if (!getVideo(id)) {
         process.stderr.write("deleteTitle: id not found\n");
         return false;
     }
@@ -168,7 +198,7 @@ async function deleteTitle(id: string): Promise<boolean> {
 }
 
 async function updateTags(id: string, tags: string[]): Promise<boolean> {
-    if (!database[id]) {
+    if (!getVideo(id)) {
         process.stderr.write("updateTags: id not found\n");
         return false;
     }
@@ -197,12 +227,12 @@ app.get("/api/videos", (req, res) => {
  * returns 404 if id not found.
  */
 app.get("/api/videos/id/:id", (req, res) => {
-    const id = req.params.id;
-    if (!database[id]) {
+    const video = getVideo(req.params.id);
+    if (!video) {
         res.status(404).end("404 Not Found");
         return;
     }
-    res.json(database[id]);
+    res.json(video);
 });
 
 /**
@@ -247,11 +277,11 @@ app.get("/api/stream/:id", (req, res) => {
     }
     const id = req.params.id;
     const index = parseInt(req.query.index?.toString() ?? "0");
-    if (!database[id]) {
+    const data = getVideo(id);
+    if (!data) {
         res.status(404).end("404 Not Found");
         return;
     }
-    const data = database[id];
     const video = data.vids[index];
     const title = data.title;
     const videoPath = [DIRECTORY, data.source, title, video].join("/");
@@ -301,13 +331,13 @@ app.get("/api/stream/:id", (req, res) => {
  * access by /api/thumbnail?id=<id>
  */
 app.get("/api/thumbnail/:id", (req, res) => {
-    const id = req.params.id;
-    if (!database[id]) {
+    const video = getVideo(req.params.id);
+    if (!video) {
         res.status(404).send("not found");
         return;
     }
-    const title = database[id].title;
-    const source = database[id].source;
+    const title = video.title;
+    const source = video.source;
     const thumbnail = [DIRECTORY, source, title, "tn.png"].join("/");
     try {
         res.sendFile(thumbnail, { root: process.cwd() });
@@ -320,15 +350,20 @@ app.get("/api/thumbnail/:id", (req, res) => {
  * POST 'count' path handler. adds to the database's id's counter.
  * returns the new counter.
  * access by /api/count with body of {id: <id>, num: <num>}
+ * num must be an integer.
  */
 app.post("/api/count", (req, res) => {
-    const id: string = req.body.id;
-    const num: string = req.body.num;
-    if (!id || !num) {
+    const id: unknown = req.body.id;
+    const num = parseNum(req.body.num);
+    if (typeof id !== "string" || num === undefined) {
         res.status(400).send("400 Bad Request");
         return;
     }
-    addCount(id, parseInt(num))
+    if (!getVideo(id)) {
+        res.status(404).send("404 Not Found");
+        return;
+    }
+    addCount(id, num)
         .then((count) => {
             res.writeHead(200, { "Content-Type": "text/plain" });
             res.end(count.toString());
@@ -368,16 +403,26 @@ app.delete("/api/videos/id/:id", (req, res) => {
  * POST 'tags' path handler. updates the database's id's tags.
  * returns true if successful, false otherwise.
  * access by /api/tags with body of {id: <id>, tags: <tags>}
+ * tags must be an array of strings. they are trimmed, and empty or
+ * duplicate tags are dropped.
  */
 app.post("/api/tags", (req, res) => {
-    const id: string = req.body.id;
-    const _tags: string[] | string = req.body.tags;
-    const tags = Array.isArray(_tags) ? _tags : [_tags];
-    if (!id || !tags) {
+    const id: unknown = req.body.id;
+    const tags: unknown = req.body.tags;
+    if (
+        typeof id !== "string" ||
+        !Array.isArray(tags) ||
+        !tags.every((tag) => typeof tag === "string")
+    ) {
         res.status(400).send("400 Bad Request");
         return;
     }
-    updateTags(id, tags)
+    if (!getVideo(id)) {
+        res.status(404).send("404 Not Found");
+        return;
+    }
+    const parsed = tags.map(parseTag).filter((tag): tag is string => !!tag);
+    updateTags(id, Array.from(new Set(parsed)))
         .then((success) => {
             if (success) {
                 res.status(200).send("200 OK");
@@ -395,19 +440,21 @@ app.post("/api/tags", (req, res) => {
  * POST 'tags/add' path handler. adds a tag to the database's id's tags.
  * returns true if successful, false otherwise.
  * access by /tags/add with body of {id: <id>, tag: <tag>}
+ * tag must be a non-empty string, and is trimmed.
  */
 app.post("/api/tag", (req, res) => {
-    const id: string = req.body.id;
-    const tag: string = req.body.tag;
-    if (!id) {
+    const id: unknown = req.body.id;
+    const tag = parseTag(req.body.tag);
+    if (typeof id !== "string" || !tag) {
         res.status(400).send("400 Bad Request");
         return;
     }
-    if (!database[id]) {
+    const video = getVideo(id);
+    if (!video) {
         res.status(404).send("404 Not Found");
         return;
     }
-    const tags = database[id].tags;
+    const tags = video.tags;
     if (tags.includes(tag)) {
         res.status(200).send("200 OK");
         return;
@@ -433,17 +480,19 @@ app.post("/api/tag", (req, res) => {
  * access by DELETE /api/tag with body of {id: <id>, tag: <tag>}
  */
 app.delete("/api/tag", (req, res) => {
-    const id: string = req.body.id;
-    const tag: string = req.body.tag;
-    if (!id) {
+    const id: unknown = req.body.id;
+    const tag: unknown = req.body.tag;
+    // any string is allowed here, so empty tags saved before can be removed
+    if (typeof id !== "string" || typeof tag !== "string") {
         res.status(400).send("400 Bad Request");
         return;
     }
-    if (!database[id]) {
+    const video = getVideo(id);
+    if (!video) {
         res.status(404).send("404 Not Found");
         return;
     }
-    const tags = database[id].tags;
+    const tags = video.tags;
     if (!tags.includes(tag)) {
         res.status(200).send("200 OK");
         return;
