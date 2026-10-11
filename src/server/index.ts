@@ -115,6 +115,39 @@ const pruneDatabase = (exists: string[]) => {
     }
 };
 
+let saving: Promise<boolean> | undefined;
+let saveAgain = false;
+
+/**
+ * writes the database to DB_FILE. it is written to a temporary file and then
+ * renamed, so a crash mid-write can't corrupt DB_FILE.
+ * calls made while a save is running are combined into one more save.
+ * never rejects: resolves to false (and logs the error) if the write failed.
+ */
+const saveDatabase = (): Promise<boolean> => {
+    if (saving) {
+        saveAgain = true;
+        return saving;
+    }
+    saving = (async () => {
+        let ok: boolean;
+        do {
+            saveAgain = false;
+            try {
+                await jsonfile.writeFile(DB_FILE + ".tmp", database);
+                await fsp.rename(DB_FILE + ".tmp", DB_FILE);
+                ok = true;
+            } catch (error) {
+                process.stderr.write("saveDatabase: " + error + "\n");
+                ok = false;
+            }
+        } while (saveAgain);
+        saving = undefined;
+        return ok;
+    })();
+    return saving;
+};
+
 /**
  * scans DIRECTORY, prunes missing titles and saves the database.
  * never rejects: errors are logged so a failed scan can't crash the server.
@@ -123,8 +156,7 @@ const updateDatabase = async () => {
     try {
         const exists = await addDirToDatabase();
         pruneDatabase(exists);
-        await jsonfile.writeFile(DB_FILE, database);
-        process.stdout.write("database updated\n");
+        if (await saveDatabase()) process.stdout.write("database updated\n");
     } catch (error) {
         process.stderr.write("updateDatabase: " + error + "\n");
     }
@@ -173,8 +205,9 @@ async function addCount(id: string, num: number): Promise<number> {
         process.stderr.write("addCount: id not found\n");
         return -1;
     }
-    database[id].counter += num;
-    return database[id].counter;
+    const counter = (database[id].counter += num);
+    await saveDatabase();
+    return counter;
 }
 
 async function deleteTitle(id: string): Promise<boolean> {
@@ -193,6 +226,7 @@ async function deleteTitle(id: string): Promise<boolean> {
             delete database[id];
             process.stdout.write("delete complete\n");
         });
+    await saveDatabase();
     if (success == undefined) return true;
     return false;
 }
@@ -203,6 +237,7 @@ async function updateTags(id: string, tags: string[]): Promise<boolean> {
         return false;
     }
     database[id].tags = tags;
+    await saveDatabase();
     return true;
 }
 
