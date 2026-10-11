@@ -52,8 +52,8 @@ const VideoItem: FC<{ video: Video }> = ({ video }) => {
             </div>
             <div className="flex-row">
                 <span>tags:</span>
-                {video.tags.map((tag, index) => (
-                    <Tag key={index} id={video.id} tag={tag} />
+                {video.tags.map((tag) => (
+                    <Tag key={tag} id={video.id} tag={tag} />
                 ))}
             </div>
         </div>

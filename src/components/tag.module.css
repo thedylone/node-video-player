@@ -27,3 +27,8 @@
 .remove:hover {
     color: #ffffff;
 }
+
+.add {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}

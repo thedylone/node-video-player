@@ -29,7 +29,7 @@ const VideoDetails: FC<{ video: Video }> = ({ video }) => {
                 <h2>Videos</h2>
                 <div className="flex-col">
                     {video.vids.map((vid, index) => (
-                        <label key={index}>
+                        <label key={vid}>
                             <input
                                 type="radio"
                                 name="index"
@@ -69,8 +69,8 @@ const VideoDetails: FC<{ video: Video }> = ({ video }) => {
             <div>
                 <h2>Tags</h2>
                 <div className="flex-row">
-                    {video.tags.map((tag, index) => (
-                        <Tag key={index} id={video.id} tag={tag} />
+                    {video.tags.map((tag) => (
+                        <Tag key={tag} id={video.id} tag={tag} />
                     ))}
                     <TagAdder id={video.id} />
                 </div>

@@ -6,8 +6,8 @@ const sourcesToContent = (sources: string[]) => {
         <>
             <h2>Sources</h2>
             <div className="flex-col">
-                {sources.map((source, index) => (
-                    <label key={index}>
+                {sources.map((source) => (
+                    <label key={source}>
                         <input type="checkbox" name="filter" value={source} />
                         {source}
                     </label>

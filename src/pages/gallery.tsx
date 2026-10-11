@@ -10,8 +10,8 @@ const videosToContent = (videos: Video[]) => {
     return (
         <>
             <div className="grid">
-                {videos.map((video, index) => (
-                    <VideoItem key={index} video={video} />
+                {videos.map((video) => (
+                    <VideoItem key={video.id} video={video} />
                 ))}
             </div>
             <Outlet />
