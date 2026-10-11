@@ -2,6 +2,7 @@ import express, { urlencoded } from "express";
 import * as dotenv from "dotenv";
 import * as fs from "fs";
 import * as fsp from "fs/promises";
+import * as path from "path";
 import jsonfile from "jsonfile";
 import { nanoid } from "nanoid";
 import FFmpeg from "fluent-ffmpeg";
@@ -471,12 +472,15 @@ const start = async () => {
 };
 
 if (!process.env["VITE"]) {
-    const frontendFiles = process.cwd() + "/dist";
+    const frontendFiles = path.join(process.cwd(), "dist");
     app.use(express.static(frontendFiles));
     app.get("/*", (_, res) => {
-        res.send(frontendFiles + "/index.html");
+        res.sendFile(path.join(frontendFiles, "index.html"));
     });
-    app.listen(process.env["PORT"]);
+    const port = Number(process.env["PORT"]) || 3000;
+    app.listen(port, () => {
+        process.stdout.write(`listening on http://localhost:${port}\n`);
+    });
 }
 
 start();
