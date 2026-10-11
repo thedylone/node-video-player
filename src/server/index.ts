@@ -10,8 +10,8 @@ import { Video } from "./schema";
 dotenv.config({ path: process.cwd() + "/.env" });
 const FFMPEG_PATH = process.env.FFMPEG_PATH;
 const FFPROBE_PATH = process.env.FFPROBE_PATH;
-const DB_FILE = process.env.DB_FILE ?? "/db.json";
-const DIRECTORY = process.env.DIRECTORY ?? "/videos";
+const DB_FILE = process.env.DB_FILE ?? "db.json";
+const DIRECTORY = process.env.DIRECTORY ?? "videos";
 
 let ffmpegExists = false;
 if (!FFMPEG_PATH || !FFPROBE_PATH) {
@@ -26,7 +26,15 @@ export const app = express();
 app.use(express.json());
 app.use(urlencoded({ extended: false }));
 
-const database: { [key: string]: Video } = jsonfile.readFileSync(DB_FILE);
+const loadDatabase = (): { [key: string]: Video } => {
+    if (!fs.existsSync(DB_FILE)) {
+        process.stdout.write(DB_FILE + " not found: starting with empty database\n");
+        return {};
+    }
+    return jsonfile.readFileSync(DB_FILE);
+};
+
+const database = loadDatabase();
 
 const generateThumbnail = (source: string, title: string, vid: string) => {
     const videoPath = [DIRECTORY, source, title, vid].join("/");

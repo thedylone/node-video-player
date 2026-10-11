@@ -8,7 +8,7 @@ A prioritized list of fixes and improvements for this repo, written to be picked
 - Each item has an ID (e.g. `P1-03`). Use it in commit messages and branch names.
 - When an item is done, tick its checkbox and add a short note (commit hash, or anything that changed from the plan). If an item turns out to be wrong or unnecessary, strike it through and say why rather than deleting it.
 - Line numbers were recorded at commit `89e09df` and will drift. Functions and routes are named so you can find them again by searching.
-- Findings came from reading the code. At the time of writing, `node_modules` was incomplete (TypeScript and the `@typescript-eslint` plugins were missing), so `tsc` and `npm run lint` were not run. Run `npm install` first and confirm each bug before fixing it.
+- Findings came from reading the code; confirm each bug before fixing it. Use `npm ci` (not `npm install`) to install without changing `package-lock.json`. To run the server outside Vite until P1-07 is fixed, bundle it: `npx esbuild src/server/index.ts --bundle --platform=node --format=esm --packages=external --outfile=<scratch>/server.mjs`, then run it from a folder that has `node_modules` available.
 - Keep changes small and in the style of the surrounding code (4-space indent, double quotes, `process.stderr.write` for logging until P3-04 replaces it).
 
 ## Project overview
@@ -25,13 +25,14 @@ A prioritized list of fixes and improvements for this repo, written to be picked
 
 ### Server: [src/server/index.ts](src/server/index.ts)
 
-- [ ] **P1-01 Crash on first run with no `db.json`.**
+- [x] **P1-01 Crash on first run with no `db.json`.**
   `jsonfile.readFileSync(DB_FILE)` (line ~29) throws if the file is missing.
   *Fix:* if the file doesn't exist, start with `{}`. Also fix the defaults `"/db.json"` and `"/videos"` (lines ~13-14), which point at the filesystem root; use `"db.json"` and `"videos"`.
   *Done when:* deleting `db.json` and starting the server works and creates the file on the first save.
+  *Status:* done on branch `fix/p1-01-missing-db` (not yet committed). Added `loadDatabase()`, which returns `{}` when `DB_FILE` is missing; a corrupt file still throws on purpose, so user data is never overwritten. Verified: with no `db.json` the server starts and writes it after the first scan, and a second start loads it.
 
 - [ ] **P1-02 Uptime ticker crashes when stdout is not a TTY.**
-  `start()` calls `process.stdout.clearLine` / `cursorTo` every second (lines ~448-457). These are undefined when output is piped (pm2, Docker, `> log.txt`), so the interval throws repeatedly.
+  `start()` calls `process.stdout.clearLine` / `cursorTo` every second (lines ~448-457). These are undefined when output is piped (pm2, Docker, `> log.txt`), so the interval throws repeatedly. *Confirmed* while testing P1-01: running with output piped crashes about 1 s after start with a `clearLine` TypeError.
   *Fix:* only run the ticker when `process.stdout.isTTY` is true, or remove it.
   *Done when:* `node dist/server/index.js > out.log` runs without errors.
 
@@ -106,7 +107,7 @@ A prioritized list of fixes and improvements for this repo, written to be picked
 
 ## Phase 2 — Clean up leftovers
 
-- [ ] **P2-01** Delete Create React App leftovers: [src/setupTests.ts](src/setupTests.ts) (imports the uninstalled `@testing-library/jest-dom`) and [src/react-app-env.d.ts](src/react-app-env.d.ts) (references the uninstalled `react-scripts`). These likely break `tsc`. Check [public/manifest.json](public/manifest.json) against `public/favicon/site.webmanifest` and keep one.
+- [ ] **P2-01** Delete Create React App leftovers: [src/setupTests.ts](src/setupTests.ts) (imports the uninstalled `@testing-library/jest-dom`) and [src/react-app-env.d.ts](src/react-app-env.d.ts) (references the uninstalled `react-scripts`). (`tsc` passes with them present, so this is tidying, not a fix.) Check [public/manifest.json](public/manifest.json) against `public/favicon/site.webmanifest` and keep one.
 - [ ] **P2-02** Rewrite [README.md](README.md). Remove the Vite template section and add: requirements (Node version, ffmpeg), `.env` variables, folder layout, dev / build / run commands, and a short API reference.
 - [ ] **P2-03** Stop tracking `.env` (it has machine-specific paths). Add `.env.example` with every variable and a comment for each, add `.env` to `.gitignore`, then `git rm --cached .env`.
 - [ ] **P2-04** Simplify the API:
