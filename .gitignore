@@ -27,3 +27,6 @@ dist-server
 # extra
 videos/
 db.json
+
+# local config (copy .env.example)
+.env
