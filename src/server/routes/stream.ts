@@ -1,20 +1,12 @@
 import { Router } from "express";
 import * as fs from "fs";
 import * as fsp from "fs/promises";
-import * as path from "path";
 import { DIRECTORY } from "../config";
+import { videoType } from "../formats";
 import { HttpError, requireVideo } from "../http";
 import { log } from "../log";
 
 export const router = Router();
-
-const MIME_TYPES: { [ext: string]: string } = {
-    ".mp4": "video/mp4",
-    ".m4v": "video/mp4",
-    ".webm": "video/webm",
-    ".mkv": "video/x-matroska",
-    ".mov": "video/quicktime",
-};
 
 /**
  * parses a Range header (single range only) for a file of the given size.
@@ -69,9 +61,7 @@ router.get("/stream/:id", async (req, res) => {
         log.error("stream", error);
         throw new HttpError(404);
     }
-    const contentType =
-        MIME_TYPES[path.extname(video).toLowerCase()] ??
-        "application/octet-stream";
+    const contentType = videoType(video) ?? "application/octet-stream";
     const range = req.headers.range
         ? parseRange(req.headers.range, fileSize)
         : undefined;

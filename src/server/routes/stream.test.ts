@@ -108,3 +108,21 @@ describe("GET /api/stream/:id", () => {
         await request(server.app).get(`/api/stream/${id}`).expect(404);
     });
 });
+
+// P5-01
+describe("GET /api/stream/:id content types", () => {
+    test.each([
+        ["1.mp4", "video/mp4"],
+        ["1.M4V", "video/mp4"],
+        ["1.webm", "video/webm"],
+        ["1.MKV", "video/x-matroska"],
+        ["1.mov", "video/quicktime"],
+    ])("%s is sent as %s", async (file, type) => {
+        const server = await loadServer({ files: { ["s/t/" + file]: "x" } });
+        await server.updateDatabase();
+        const res = await request(server.app)
+            .get(`/api/stream/${server.byTitle("t").id}`)
+            .expect(200);
+        expect(res.headers["content-type"]).toBe(type);
+    });
+});

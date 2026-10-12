@@ -40,7 +40,7 @@ Environment variables set in the shell take precedence over `.env`.
 
 ### Folder layout
 
-Videos are stored as `DIRECTORY/<source>/<title>/*.mp4`:
+Videos are stored as `DIRECTORY/<source>/<title>/<video files>`:
 
 ```
 videos/                  <- DIRECTORY
@@ -65,8 +65,13 @@ hololive/
         └── tnt.mp4
 ```
 
-- Each title folder becomes one entry in the gallery; its `.mp4` files are
+- Each title folder becomes one entry in the gallery; its video files are
   listed on the watch page in natural order (`2.mp4` before `10.mp4`).
+- Video files are `.mp4`, `.m4v`, `.webm`, `.mkv` and `.mov`, in any case
+  (`clip.MP4` too). Other files are ignored. The server streams them as they
+  are, without converting, so the browser has to support the codecs inside:
+  H.264 or VP9 video plays in current browsers whatever the container, while
+  e.g. HEVC in a `.mkv` or ProRes in a `.mov` may not.
 - The folder is scanned on startup and then every 60 seconds. New titles and new
   videos show up after the next scan; removed folders are dropped from the
   database.

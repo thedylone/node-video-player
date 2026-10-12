@@ -4,6 +4,7 @@ import { Video } from "../shared/schema";
 import { DIRECTORY } from "./config";
 import { database, saveDatabase } from "./db";
 import { queueThumbnail } from "./ffmpeg";
+import { isVideo } from "./formats";
 import { log } from "./log";
 
 /** how long a pruned title can still be matched to a renamed folder. */
@@ -36,7 +37,7 @@ const scanDirectory = async (): Promise<Folder[]> => {
             const titlePath = [sourcePath, title].join("/");
             const files = await fsp.readdir(titlePath);
             const vids = files
-                .filter((x) => x.endsWith(".mp4"))
+                .filter(isVideo)
                 .sort((a, b) =>
                     a.localeCompare(b, undefined, { numeric: true })
                 );

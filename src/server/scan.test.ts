@@ -51,7 +51,7 @@ describe("scan", () => {
         expect(server.log.info).toHaveBeenCalledWith("database updated");
     });
 
-    test("lists only .mp4 files, in natural order", async () => {
+    test("lists only video files, in natural order", async () => {
         const server = await loadServer({
             files: {
                 "s/t/10.mp4": "",
@@ -63,6 +63,38 @@ describe("scan", () => {
         });
         await server.updateDatabase();
         expect(server.byTitle("t").vids).toEqual(["1.mp4", "2.mp4", "10.mp4"]);
+    });
+
+    // P5-01
+    test("lists other video formats, ignoring the case of extensions", async () => {
+        const server = await loadServer({
+            files: {
+                "s/t/a.webm": "",
+                "s/t/b.mkv": "",
+                "s/t/c.mov": "",
+                "s/t/d.m4v": "",
+                "s/t/e.MP4": "",
+                "s/t/f.Mov": "",
+                "s/t/g.avi": "",
+                "s/t/mp4": "",
+            },
+        });
+        await server.updateDatabase();
+        expect(server.byTitle("t").vids).toEqual([
+            "a.webm",
+            "b.mkv",
+            "c.mov",
+            "d.m4v",
+            "e.MP4",
+            "f.Mov",
+        ]);
+    });
+
+    // P5-01
+    test("adds a title that has only other formats", async () => {
+        const server = await loadServer({ files: { "s/t/1.webm": "" } });
+        await server.updateDatabase();
+        expect(server.byTitle("t").vids).toEqual(["1.webm"]);
     });
 
     // P1-03

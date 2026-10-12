@@ -9,7 +9,7 @@ services:
       # network
       - "127.0.0.1:3000:3000"
     volumes:
-      # <source>/<title>/*.mp4. writable: thumbnails are saved here and
+      # <source>/<title>/<video files>. writable: thumbnails are saved here and
       # deleting a title deletes its folder
       - ./videos:/videos
       # holds db.json (counts and tags)
