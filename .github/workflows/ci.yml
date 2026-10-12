@@ -27,3 +27,32 @@ jobs:
       - run: npm run build:server
       - name: Smoke test the production server
         run: npm run test:smoke
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build -t video-player .
+      - name: Run the image and check it serves pages and makes thumbnails
+        run: |
+          mkdir -p videos/source/title data
+          # the image runs as uid 1000, which must be able to write here
+          sudo chown -R 1000:1000 videos data
+          # a real video, made with the image's ffmpeg
+          docker run --rm --entrypoint ffmpeg -v "$PWD/videos:/videos" \
+            video-player -loglevel error -f lavfi \
+            -i testsrc=duration=2:size=320x240:rate=10 -pix_fmt yuv420p \
+            /videos/source/title/1.mp4
+          docker run -d --name video-player -p 3000:3000 \
+            -v "$PWD/videos:/videos" -v "$PWD/data:/data" video-player
+          for _ in $(seq 1 30); do
+            test -f videos/source/title/tn.png && break
+            sleep 1
+          done
+          curl -sf localhost:3000/api/videos | grep '"title":"title"'
+          curl -sf localhost:3000/watch/abc | grep '<div id="root">'
+          test -f data/db.json
+          test -f videos/source/title/tn.png
+      - name: Show the container log
+        if: always()
+        run: docker logs video-player || true

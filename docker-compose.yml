@@ -1,0 +1,16 @@
+# docker compose up -d, then open http://localhost:3000
+services:
+  video-player:
+    build: .
+    restart: unless-stopped
+    ports:
+      # only reachable from this machine, since anyone who can reach the
+      # server can delete videos. remove "127.0.0.1:" to open it to your
+      # network
+      - "127.0.0.1:3000:3000"
+    volumes:
+      # <source>/<title>/*.mp4. writable: thumbnails are saved here and
+      # deleting a title deletes its folder
+      - ./videos:/videos
+      # holds db.json (counts and tags)
+      - ./data:/data

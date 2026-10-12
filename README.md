@@ -104,6 +104,25 @@ npm run build && npm run build:server && npm start
 Run these from the repository root: the server looks for `dist/` and `.env`
 in the current folder.
 
+### Docker
+
+The image builds the app and includes ffmpeg, so thumbnails work without
+setting any paths. With [docker-compose.yml](docker-compose.yml):
+
+```sh
+mkdir -p videos data   # an existing db.json goes in data/
+docker compose up -d   # then open http://localhost:3000
+```
+
+- `videos/` is mounted as `DIRECTORY` and `data/` holds `db.json`. `db.json`
+  is not mounted as a single file because saving replaces it with a rename,
+  which a single-file mount doesn't allow.
+- The server runs as uid 1000, which needs write access to both folders
+  (thumbnails are saved next to the videos, and deleting a title deletes its
+  folder). On Linux, `sudo chown -R 1000:1000 videos data` if needed.
+- The port is published on `127.0.0.1` only, because of the lack of access
+  control described above. Edit `ports` to open it to your network.
+
 ## Tests
 
 Tests use Vitest and sit next to the code as `*.test.ts(x)`. Server tests use

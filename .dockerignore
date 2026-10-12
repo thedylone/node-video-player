@@ -1,0 +1,11 @@
+.git
+.github
+node_modules
+dist
+dist-server
+videos
+data
+db.json
+db.json.tmp
+.env
+*.log
