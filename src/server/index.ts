@@ -210,25 +210,20 @@ async function addCount(id: string, num: number): Promise<number> {
     return counter;
 }
 
-async function deleteTitle(id: string): Promise<boolean> {
-    if (!getVideo(id)) {
-        process.stderr.write("deleteTitle: id not found\n");
-        return false;
-    }
-    const source = database[id].source;
-    const title = database[id].title;
-    const success = await fsp
-        .rm([DIRECTORY, source, title].join("/"), {
-            recursive: true,
-            force: true,
-        })
-        .then(() => {
-            delete database[id];
-            process.stdout.write("delete complete\n");
-        });
+/**
+ * deletes the title's folder from disk and its entry from the database.
+ * the id must exist. rejects if the folder can't be deleted, in which case
+ * the entry is kept.
+ */
+async function deleteTitle(id: string): Promise<void> {
+    const { source, title } = database[id];
+    await fsp.rm([DIRECTORY, source, title].join("/"), {
+        recursive: true,
+        force: true,
+    });
+    delete database[id];
+    process.stdout.write("delete complete\n");
     await saveDatabase();
-    if (success == undefined) return true;
-    return false;
 }
 
 async function updateTags(id: string, tags: string[]): Promise<boolean> {
@@ -390,30 +385,40 @@ app.get("/api/stream/:id", async (req, res) => {
 });
 
 /**
- * GET 'thumbnail' path handler with query of id.
- * returns thumbnail png if found.
- * access by /api/thumbnail?id=<id>
+ * GET thumbnail png of a title.
+ * access by /api/thumbnail/<id>
+ * returns 404 if id not found or the title has no thumbnail.
  */
 app.get("/api/thumbnail/:id", (req, res) => {
     const video = getVideo(req.params.id);
     if (!video) {
-        res.status(404).send("not found");
+        res.status(404).send("404 Not Found");
         return;
     }
-    const title = video.title;
-    const source = video.source;
-    const thumbnail = [DIRECTORY, source, title, "tn.png"].join("/");
-    try {
-        res.sendFile(thumbnail, { root: process.cwd() });
-    } catch {
+    const thumbnail = path.resolve(
+        DIRECTORY,
+        video.source,
+        video.title,
+        "tn.png"
+    );
+    // the path comes from the scan, not the request, so dotted folders
+    // (e.g. a DIRECTORY inside a hidden folder) are fine
+    res.sendFile(thumbnail, { dotfiles: "allow" }, (error) => {
+        // headers are already sent if the client went away mid-transfer
+        if (!error || res.headersSent) return;
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+            res.status(404).send("404 Not Found");
+            return;
+        }
+        process.stderr.write("thumbnail: " + error + "\n");
         res.status(500).send("500 Internal Server Error");
-    }
+    });
 });
 
 /**
- * POST 'count' path handler. adds to the database's id's counter.
- * returns the new counter.
- * access by /api/count with body of {id: <id>, num: <num>}
+ * POST adds num to the title's counter.
+ * returns the new counter as JSON.
+ * access by POST /api/count with body of {id: <id>, num: <num>}
  * num must be an integer.
  */
 app.post("/api/count", (req, res) => {
@@ -438,34 +443,30 @@ app.post("/api/count", (req, res) => {
 });
 
 /**
- * DELETE 'video' path handler. deletes the database's id.
- * returns true if successful, false otherwise.
+ * DELETE deletes the title's folder from disk and removes it from the
+ * database.
  * access by DELETE /api/videos/id/<id>
+ * returns 404 if id not found.
  */
 app.delete("/api/videos/id/:id", (req, res) => {
-    const id: string = req.params.id;
-    if (!id) {
-        res.status(400).send("400 Bad Request");
+    const id = req.params.id;
+    if (!getVideo(id)) {
+        res.status(404).send("404 Not Found");
         return;
     }
     deleteTitle(id)
-        .then((success) => {
-            if (success) {
-                res.status(200).send("200 OK");
-            } else {
-                res.status(500).send("500 Internal Server Error");
-            }
+        .then(() => {
+            res.status(200).send("200 OK");
         })
         .catch((error) => {
-            process.stderr.write("/delete catch: " + error + "\n");
+            process.stderr.write("DELETE /api/videos/id: " + error + "\n");
             res.status(500).send("500 Internal Server Error");
         });
 });
 
 /**
- * POST 'tags' path handler. updates the database's id's tags.
- * returns true if successful, false otherwise.
- * access by /api/tags with body of {id: <id>, tags: <tags>}
+ * POST replaces the title's tags.
+ * access by POST /api/tags with body of {id: <id>, tags: <tags>}
  * tags must be an array of strings. they are trimmed, and empty or
  * duplicate tags are dropped.
  */
@@ -494,15 +495,14 @@ app.post("/api/tags", (req, res) => {
             }
         })
         .catch((error) => {
-            process.stderr.write("/tags catch: " + error + "\n");
+            process.stderr.write("POST /api/tags: " + error + "\n");
             res.status(500).send("500 Internal Server Error");
         });
 });
 
 /**
- * POST 'tags/add' path handler. adds a tag to the database's id's tags.
- * returns true if successful, false otherwise.
- * access by /tags/add with body of {id: <id>, tag: <tag>}
+ * POST adds a tag to the title's tags. adding an existing tag does nothing.
+ * access by POST /api/tag with body of {id: <id>, tag: <tag>}
  * tag must be a non-empty string, and is trimmed.
  */
 app.post("/api/tag", (req, res) => {
@@ -532,14 +532,14 @@ app.post("/api/tag", (req, res) => {
             }
         })
         .catch((error) => {
-            process.stderr.write("/tags/add catch: " + error + "\n");
+            process.stderr.write("POST /api/tag: " + error + "\n");
             res.status(500).send("500 Internal Server Error");
         });
 });
 
 /**
- * DELETE 'tag' path handler. removes a tag from the database's id's tags.
- * returns true if successful, false otherwise.
+ * DELETE removes a tag from the title's tags. removing a missing tag does
+ * nothing.
  * access by DELETE /api/tag with body of {id: <id>, tag: <tag>}
  */
 app.delete("/api/tag", (req, res) => {
@@ -571,7 +571,7 @@ app.delete("/api/tag", (req, res) => {
             }
         })
         .catch((error) => {
-            process.stderr.write("/tags/remove catch: " + error + "\n");
+            process.stderr.write("DELETE /api/tag: " + error + "\n");
             res.status(500).send("500 Internal Server Error");
         });
 });
