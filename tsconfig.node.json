@@ -1,7 +1,8 @@
 {
+    // the Vite and Vitest configs and the dev server plugin
     "compilerOptions": {
-        "composite": true,
-        "tsBuildInfoFile": "node_modules/.tmp/tsconfig.node.tsbuildinfo",
+        "noEmit": true,
+        "allowImportingTsExtensions": true,
         "skipLibCheck": true,
         "module": "ESNext",
         "moduleResolution": "bundler",

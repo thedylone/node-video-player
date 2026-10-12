@@ -57,6 +57,8 @@ const fail = (job: Job, message: string) => {
 /** lets the queue move on after a job finishes. */
 const settle = () => new Promise((resolve) => setImmediate(resolve));
 
+const lastJob = () => ffmpeg.state.jobs[ffmpeg.state.jobs.length - 1];
+
 const jobVideos = () =>
     ffmpeg.state.jobs.map((job) => path.relative(server.directory, job.video));
 
@@ -90,7 +92,7 @@ describe("thumbnails", () => {
         await server.updateDatabase();
         expect(jobVideos()).toEqual([path.join("s", "a", "2.mp4")]);
         while (ffmpeg.state.running) {
-            succeed(ffmpeg.state.jobs.at(-1)!);
+            succeed(lastJob());
             await settle();
         }
         expect(jobVideos()).toEqual([
@@ -109,7 +111,7 @@ describe("thumbnails", () => {
         await server.updateDatabase();
         await server.updateDatabase();
         while (ffmpeg.state.running) {
-            succeed(ffmpeg.state.jobs.at(-1)!);
+            succeed(lastJob());
             await settle();
         }
         expect(ffmpeg.state.jobs).toHaveLength(3);
@@ -127,7 +129,7 @@ describe("thumbnails", () => {
             await server.updateDatabase();
             const started = ffmpeg.state.jobs.length > before;
             if (started) {
-                fail(ffmpeg.state.jobs.at(-1)!, "broken video");
+                fail(lastJob(), "broken video");
                 await settle();
             }
             return started;

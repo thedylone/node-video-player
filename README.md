@@ -14,7 +14,7 @@ Each title has a play counter and tags, which are stored in a JSON file.
 
 ## Requirements
 
-- Node.js 18 or later
+- Node.js 22.22+ or 24.15+ (the current LTS releases)
 - ffmpeg and ffprobe, only for thumbnails. Without them the server still runs;
   titles just have no poster image.
 

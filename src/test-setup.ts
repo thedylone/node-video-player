@@ -1,23 +1,11 @@
 /**
- * setup for every test file. only does anything in jsdom tests.
+ * setup for every test file.
  */
 import { afterEach } from "vitest";
 
+// Testing Library only unmounts after each test by itself when test globals
+// are on. imported only in jsdom tests, so server tests don't load React
 if (typeof window !== "undefined") {
-    // React Router builds Requests with jsdom's AbortSignal, which Node's
-    // Request rejects. build them without it, then put the signal back:
-    // the router reads it to drop the results of cancelled navigations
-    const NodeRequest = globalThis.Request;
-    globalThis.Request = class Request extends NodeRequest {
-        constructor(input: RequestInfo | URL, init?: RequestInit) {
-            super(input, { ...init, signal: undefined });
-            if (init?.signal) {
-                Object.defineProperty(this, "signal", { value: init.signal });
-            }
-        }
-    };
-
-    // imported here, so server tests don't load React
     const { cleanup } = await import("@testing-library/react");
     afterEach(cleanup);
 }

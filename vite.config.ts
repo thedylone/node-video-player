@@ -1,10 +1,10 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import express from "./express-plugin";
+import express from "./express-plugin.ts";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ ssrBuild }) => ({
+export default defineConfig(({ isSsrBuild }) => ({
     plugins: [react(), express("src/server/app.ts")],
     // the server bundle (build:server) does not need the public folder
-    build: ssrBuild ? { copyPublicDir: false } : {},
+    build: isSsrBuild ? { copyPublicDir: false } : {},
 }));
