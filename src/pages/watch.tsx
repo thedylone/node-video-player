@@ -1,3 +1,4 @@
+import { FC, useEffect } from "react";
 import {
     Outlet,
     useLoaderData,
@@ -7,8 +8,13 @@ import {
 import { Video } from "../server/schema";
 import Content from "../components/content";
 
-const videoToContent = (video: Video, index: string) => {
-    document.title = video.title;
+const VideoContent: FC<{ video: Video; index: string }> = ({
+    video,
+    index,
+}) => {
+    useEffect(() => {
+        document.title = video.title;
+    }, [video.title]);
     return (
         <>
             <video
@@ -34,7 +40,7 @@ const Watch = () => {
                     if (video.vids.length === 0) {
                         return <div className="empty">no videos found!</div>;
                     }
-                    return videoToContent(video, index);
+                    return <VideoContent video={video} index={index} />;
                 }}
             </Await>
         </Content>

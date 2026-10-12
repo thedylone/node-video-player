@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
     Outlet,
     useLoaderData,
@@ -27,7 +28,9 @@ const videosToContent = (videos: Video[]) => {
 const Gallery = () => {
     const data = useLoaderData() as { videos: Video[] };
     const search = useSearchParams()[0].get("search");
-    document.title = "Video Player";
+    useEffect(() => {
+        document.title = "Video Player";
+    }, []);
     return (
         <Content>
             {/* the form replaces the query string, so keep the search in it */}
