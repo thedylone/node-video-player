@@ -90,8 +90,8 @@ hololive/
 | `npm run build:server`                       | Bundles the server into `dist-server/`.                               |
 | `npm start`                                  | Runs the built server, serving `dist/` and the API on `PORT`.         |
 | `npm test`                                   | Runs the tests once (`npm run test:watch` reruns them on changes).    |
-| `npm run typecheck`                          | Type-checks the client, server, tests and config files.               |
 | `npm run test:smoke`                         | Starts the built server and checks it serves pages and the API.       |
+| `npm run typecheck`                          | Type-checks the client, server, tests and config files.               |
 | `npm run lint`                               | Runs ESLint.                                                          |
 | `npm run format`                             | Formats the code with Prettier (`format:check` only checks).          |
 
@@ -132,7 +132,8 @@ Library in jsdom with the API calls mocked.
 
 CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs lint, the format
 check, the type-check, the tests, both builds and the smoke test on Node 22 and
-24 for every push and pull request.
+24 for every push and pull request. A second job builds the Docker image and
+checks the running container.
 
 ## Pages
 
