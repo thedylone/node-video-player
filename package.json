@@ -12,6 +12,7 @@
         "typecheck": "tsc && tsc -p tsconfig.node.json --noEmit",
         "test": "vitest run",
         "test:watch": "vitest",
+        "test:smoke": "bash scripts/smoke-test.sh",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "preview": "vite preview"
