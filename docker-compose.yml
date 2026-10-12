@@ -5,9 +5,11 @@ services:
     restart: unless-stopped
     ports:
       # only reachable from this machine, since anyone who can reach the
-      # server can delete videos. remove "127.0.0.1:" to open it to your
-      # network
+      # server can delete videos. to open it to your network, remove
+      # "127.0.0.1:" and set PASSWORD below
       - "127.0.0.1:3000:3000"
+    # environment:
+    #   PASSWORD: "change me"
     volumes:
       # <source>/<title>/<video files>. writable: thumbnails are saved here and
       # deleting a title deletes its folder

@@ -60,5 +60,12 @@ expect_body / '<div id="root">'
 # P1-06: client routes are served index.html
 expect_body '/watch/abc?index=1' '<div id="root">'
 expect_status /api/nope 404
+# P5-03: listening on 127.0.0.1, so other host names are refused
+status="$(curl -s -o /dev/null -w '%{http_code}' -H 'Host: evil.example' "$url/api/videos" || true)"
+if [ "$status" != 403 ]; then
+    echo "FAIL: GET /api/videos for Host evil.example returned $status, not 403"
+    exit 1
+fi
+echo "ok: other host names are 403"
 test -f "$tmp/db.json" || { echo "FAIL: database not saved"; exit 1; }
 echo "smoke test passed"

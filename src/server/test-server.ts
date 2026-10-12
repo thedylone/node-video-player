@@ -42,6 +42,8 @@ type Options = {
     db?: { [id: string]: unknown } | string;
     /** sets FFMPEG_PATH and FFPROBE_PATH, so thumbnails are queued. */
     ffmpeg?: boolean;
+    /** sets PASSWORD. */
+    password?: string;
 };
 
 /**
@@ -50,7 +52,12 @@ type Options = {
  * every call imports new copies. log output is silenced and recorded.
  * the temporary folder is deleted after the test.
  */
-export const loadServer = async ({ files = {}, db, ffmpeg }: Options = {}) => {
+export const loadServer = async ({
+    files = {},
+    db,
+    ffmpeg,
+    password,
+}: Options = {}) => {
     const dir = await fsp.mkdtemp(path.join(os.tmpdir(), "video-player-"));
     tempDirs.push(dir);
     const directory = path.join(dir, "videos");
@@ -66,6 +73,7 @@ export const loadServer = async ({ files = {}, db, ffmpeg }: Options = {}) => {
     vi.stubEnv("DB_FILE", dbFile);
     vi.stubEnv("FFMPEG_PATH", ffmpeg ? "ffmpeg" : "");
     vi.stubEnv("FFPROBE_PATH", ffmpeg ? "ffprobe" : "");
+    vi.stubEnv("PASSWORD", password ?? "");
 
     vi.resetModules();
     const { log } = await import("./log");

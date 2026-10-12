@@ -1,4 +1,6 @@
 import express, { urlencoded } from "express";
+import { requirePassword, sameOriginWrites } from "./access";
+import { PASSWORD } from "./config";
 import { clearThumbnailQueue } from "./ffmpeg";
 import { errorHandler, notFound } from "./http";
 import { log } from "./log";
@@ -9,6 +11,7 @@ import { router as tags } from "./routes/tags";
 import { router as videos } from "./routes/videos";
 
 const api = express.Router();
+api.use(sameOriginWrites);
 api.use(express.json());
 api.use(urlencoded({ extended: false }));
 // express 5 leaves req.body undefined when no parser ran (e.g. a request
@@ -27,6 +30,8 @@ api.use(errorHandler);
  * in dev, express-plugin.ts mounts this into the vite dev server.
  */
 export const app = express();
+// before everything else, so the client files are protected too
+if (PASSWORD) app.use(requirePassword(PASSWORD));
 app.use("/api", api);
 
 /**

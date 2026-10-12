@@ -8,9 +8,9 @@ Each title has a play counter and tags, which are stored in a JSON file.
 - Express server that scans the folder, streams videos and serves the API
 - Thumbnails generated with ffmpeg (optional)
 
-> **No access control.** Anyone who can reach the server can change counts and
-> tags, and can **delete title folders from disk**. Only run it on a trusted
-> network.
+> Anyone who can reach the server can change counts and tags, and can **delete
+> title folders from disk**. By default it only accepts connections from the
+> machine it runs on; see [Access](#access) before opening it to a network.
 
 ## Requirements
 
@@ -30,13 +30,16 @@ cp .env.example .env   # then edit .env
 Settings are read from `.env` in the folder you start the server from.
 Environment variables set in the shell take precedence over `.env`.
 
-| Variable       | Default   | Description                                                    |
-| -------------- | --------- | -------------------------------------------------------------- |
-| `DIRECTORY`    | `videos`  | Folder holding the videos (see below). Relative or absolute.   |
-| `DB_FILE`      | `db.json` | JSON database file. Created on the first save if missing.      |
-| `FFMPEG_PATH`  |           | Path to the ffmpeg executable. Needed for thumbnails.          |
-| `FFPROBE_PATH` |           | Path to the ffprobe executable. Needed for thumbnails.         |
-| `PORT`         | `3000`    | Port for `npm start`. `npm run dev` uses Vite's port instead.  |
+| Variable        | Default     | Description                                                   |
+| --------------- | ----------- | ------------------------------------------------------------- |
+| `DIRECTORY`     | `videos`    | Folder holding the videos (see below). Relative or absolute.  |
+| `DB_FILE`       | `db.json`   | JSON database file. Created on the first save if missing.     |
+| `FFMPEG_PATH`   |             | Path to the ffmpeg executable. Needed for thumbnails.         |
+| `FFPROBE_PATH`  |             | Path to the ffprobe executable. Needed for thumbnails.        |
+| `PORT`          | `3000`      | Port for `npm start`. `npm run dev` uses Vite's port instead. |
+| `HOST`          | `127.0.0.1` | Address `npm start` listens on. `0.0.0.0` for every network.  |
+| `PASSWORD`      |             | If set, the browser asks for it before showing anything.      |
+| `ALLOWED_HOSTS` |             | Extra host names accepted while `HOST` is loopback (commas).  |
 
 ### Folder layout
 
@@ -109,6 +112,28 @@ npm run build && npm run build:server && npm start
 Run these from the repository root: the server looks for `dist/` and `.env`
 in the current folder.
 
+### Access
+
+There are no user accounts. The defaults keep the server to the machine it
+runs on:
+
+- `npm start` listens on `127.0.0.1`, so other machines can't connect. Set
+  `HOST=0.0.0.0` to open it to your network (in dev, `npm run dev -- --host`).
+- While it listens on `127.0.0.1`, requests for host names other than
+  `localhost`, `127.x.x.x` and `[::1]` are refused with `403`. This stops a
+  web page from reaching the server through a domain that resolves to
+  `127.0.0.1` (DNS rebinding). If a reverse proxy on the same machine serves
+  the site under another name, add that name to `ALLOWED_HOSTS`.
+- Changes (`POST` and `DELETE`) sent by a page on another site are refused with
+  `403`, so a web page you visit can't change counts or delete videos. Behind a
+  reverse proxy, pass on the original `Host` header (nginx:
+  `proxy_set_header Host $host;`) or set `X-Forwarded-Host`.
+- With `PASSWORD` set, every page and API request needs it, through HTTP Basic
+  authentication: the browser asks once, with any user name. For the API, send
+  `Authorization: Basic <base64 of "user:password">` (curl: `-u user:password`).
+  Basic authentication sends the password unencrypted over plain HTTP, so put
+  the server behind HTTPS if it is reachable from outside your network.
+
 ### Docker
 
 The image builds the app and includes ffmpeg, so thumbnails work without
@@ -125,8 +150,9 @@ docker compose up -d   # then open http://localhost:3000
 - The server runs as uid 1000, which needs write access to both folders
   (thumbnails are saved next to the videos, and deleting a title deletes its
   folder). On Linux, `sudo chown -R 1000:1000 videos data` if needed.
-- The port is published on `127.0.0.1` only, because of the lack of access
-  control described above. Edit `ports` to open it to your network.
+- The image sets `HOST=0.0.0.0` so Docker can forward the port, and
+  docker-compose.yml publishes it on `127.0.0.1` only. To open it to your
+  network, edit `ports` and set `PASSWORD` (see [Access](#access)).
 
 ## Tests
 
@@ -166,7 +192,8 @@ A title is returned as:
 ```
 
 Request bodies are JSON. Invalid bodies return `400`, and unknown ids and
-unknown `/api` paths return `404`. Errors are sent as JSON:
+unknown `/api` paths return `404`. Without the password (if `PASSWORD` is set)
+requests return `401`, and changes sent from another site `403`. Errors are sent as JSON:
 `{ "error": "<message>" }`.
 
 | Method   | Path                    | Description                                                                                                   |

@@ -16,12 +16,15 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/dist-server ./dist-server
 # DB_FILE is in a folder, not a file of its own, because saving replaces it
-# with a rename, which a single-file mount doesn't allow
+# with a rename, which a single-file mount doesn't allow.
+# HOST: listen on every interface of the container, or docker can't forward
+# the published port to it. docker-compose.yml decides who can reach that.
 ENV NODE_ENV=production \
     DIRECTORY=/videos \
     DB_FILE=/data/db.json \
     FFMPEG_PATH=/usr/bin/ffmpeg \
     FFPROBE_PATH=/usr/bin/ffprobe \
+    HOST=0.0.0.0 \
     PORT=3000
 EXPOSE 3000
 # the mounted /videos and /data must be writable by this user (uid 1000):
