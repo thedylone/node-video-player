@@ -90,6 +90,7 @@ hololive/
 | `npm run build:server`                       | Bundles the server into `dist-server/`.                               |
 | `npm start`                                  | Runs the built server, serving `dist/` and the API on `PORT`.         |
 | `npm run lint`                               | Runs ESLint.                                                          |
+| `npm run format`                             | Formats the code with Prettier (`format:check` only checks).          |
 
 To run in production:
 

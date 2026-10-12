@@ -1,4 +1,9 @@
-import type { ErrorRequestHandler, NextFunction, Request, Response } from "express";
+import type {
+    ErrorRequestHandler,
+    NextFunction,
+    Request,
+    Response,
+} from "express";
 import { STATUS_CODES } from "http";
 import { Video } from "../shared/schema";
 import { getVideo } from "./db";

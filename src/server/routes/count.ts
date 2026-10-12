@@ -20,7 +20,8 @@ router.post(
     "/count",
     asyncHandler(async (req, res) => {
         const num = parseNum(req.body.num);
-        if (num === undefined) throw new HttpError(400, "num must be an integer");
+        if (num === undefined)
+            throw new HttpError(400, "num must be an integer");
         const video = requireVideo(req.body.id);
         res.json(await addCount(video, num));
     })

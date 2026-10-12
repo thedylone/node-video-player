@@ -40,9 +40,10 @@ export const start = () => {
             const uptime = currentTime - startTime;
             process.stdout.clearLine(0);
             process.stdout.cursorTo(0);
-            const secs = String(Math.floor(uptime / 1000) % 60).padStart(2, "0");
-            const mins = String(Math.floor(uptime / 60000) % 60).padStart(2, "0");
-            const hours = String(Math.floor(uptime / 3600000)).padStart(2, "0");
+            const pad = (n: number) => String(n).padStart(2, "0");
+            const secs = pad(Math.floor(uptime / 1000) % 60);
+            const mins = pad(Math.floor(uptime / 60000) % 60);
+            const hours = pad(Math.floor(uptime / 3600000));
             process.stdout.write(`uptime: ${hours}:${mins}:${secs}\t`);
         }, 1000);
         intervals.push(ticker);

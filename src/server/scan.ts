@@ -37,7 +37,9 @@ const scanDirectory = async (): Promise<Folder[]> => {
             const files = await fsp.readdir(titlePath);
             const vids = files
                 .filter((x) => x.endsWith(".mp4"))
-                .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+                .sort((a, b) =>
+                    a.localeCompare(b, undefined, { numeric: true })
+                );
             folders.push({ source, title, vids });
             if (vids.length && !files.includes("tn.png"))
                 queueThumbnail(source, title, vids[0]);
@@ -60,7 +62,9 @@ const matchMoved = (added: Folder[], old: Video[]) => {
         return groups.get(key)!;
     };
     for (const folder of added) group(folder.vids).added.push(folder);
-    for (const video of old) if (video.vids.length) group(video.vids).old.push(video);
+    for (const video of old) {
+        if (video.vids.length) group(video.vids).old.push(video);
+    }
     const moved = new Map<Folder, Video>();
     for (const { added, old } of groups.values()) {
         if (added.length === 1 && old.length === 1) moved.set(added[0], old[0]);

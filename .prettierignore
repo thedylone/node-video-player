@@ -1,0 +1,3 @@
+# hand-formatted docs: prettier would rewrite their emphasis and tables
+*.md
+package-lock.json

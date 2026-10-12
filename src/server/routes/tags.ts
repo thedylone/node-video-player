@@ -20,7 +20,10 @@ router.post(
     "/tags",
     asyncHandler(async (req, res) => {
         const tags: unknown = req.body.tags;
-        if (!Array.isArray(tags) || !tags.every((tag) => typeof tag === "string"))
+        if (
+            !Array.isArray(tags) ||
+            !tags.every((tag) => typeof tag === "string")
+        )
             throw new HttpError(400, "tags must be an array of strings");
         const video = requireVideo(req.body.id);
         const parsed = tags.map(parseTag).filter((tag): tag is string => !!tag);
@@ -57,7 +60,8 @@ router.delete(
     asyncHandler(async (req, res) => {
         const tag: unknown = req.body.tag;
         // any string is allowed here, so empty tags saved before can be removed
-        if (typeof tag !== "string") throw new HttpError(400, "tag must be a string");
+        if (typeof tag !== "string")
+            throw new HttpError(400, "tag must be a string");
         const video = requireVideo(req.body.id);
         if (video.tags.includes(tag)) {
             await updateTags(

@@ -102,6 +102,8 @@ export const queueThumbnail = (source: string, title: string, vid: string) => {
  * plugin replaces this module, so two copies don't make the same thumbnails.
  */
 export const clearThumbnailQueue = () => {
-    for (const { source, title } of queue) queued.delete([source, title].join("/"));
+    for (const { source, title } of queue) {
+        queued.delete([source, title].join("/"));
+    }
     queue.length = 0;
 };

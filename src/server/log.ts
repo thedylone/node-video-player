@@ -1,6 +1,6 @@
 /** describes an error for the log, with its stack trace if it has one. */
 const describe = (error: unknown) =>
-    error instanceof Error ? error.stack ?? error.message : String(error);
+    error instanceof Error ? (error.stack ?? error.message) : String(error);
 
 /**
  * writes a timestamped line. on a terminal, the uptime ticker's line is

@@ -1,0 +1,11 @@
+{
+    "tabWidth": 4,
+    "trailingComma": "es5",
+    "endOfLine": "auto",
+    "overrides": [
+        {
+            "files": ["*.yml", "*.yaml"],
+            "options": { "tabWidth": 2 }
+        }
+    ]
+}

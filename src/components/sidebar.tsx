@@ -7,7 +7,8 @@ const Sidebar: FC<{ children?: React.ReactNode }> = (props) => {
     return (
         <div
             className={
-                "flex-col pad-1em no-scrollbar sidebar" + (open ? " active" : "")
+                "flex-col pad-1em no-scrollbar sidebar" +
+                (open ? " active" : "")
             }
         >
             <Suspense fallback={<div className="empty">loading...</div>}>
