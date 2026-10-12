@@ -1,4 +1,6 @@
 import express, { urlencoded } from "express";
+import { errorHandler, notFound } from "./http";
+import { log } from "./log";
 import { updateDatabase } from "./scan";
 import { router as count } from "./routes/count";
 import { router as stream } from "./routes/stream";
@@ -9,6 +11,9 @@ const api = express.Router();
 api.use(express.json());
 api.use(urlencoded({ extended: false }));
 api.use(videos, stream, count, tags);
+// unknown /api paths get a JSON 404 instead of reaching the client routes
+api.use(notFound);
+api.use(errorHandler);
 
 /**
  * the API, mounted at /api. main.ts adds the client files for production;
@@ -23,7 +28,7 @@ app.use("/api", api);
  * reloads this module.
  */
 export const start = () => {
-    process.stdout.write("server started\n");
+    log.info("server started");
     const intervals: NodeJS.Timeout[] = [];
     const startTime = new Date().getTime();
     // show uptime in hh:mm:ss and update every second by clearing the line.

@@ -119,8 +119,9 @@ A title is returned as:
 }
 ```
 
-Request bodies are JSON. Invalid bodies return `400`, and unknown ids return
-`404`.
+Request bodies are JSON. Invalid bodies return `400`, and unknown ids and
+unknown `/api` paths return `404`. Errors are sent as JSON:
+`{ "error": "<message>" }`.
 
 | Method   | Path                    | Description                                                                                                   |
 | -------- | ----------------------- | ------------------------------------------------------------------------------------------------------------- |

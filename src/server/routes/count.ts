@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { addCount, getVideo } from "../db";
+import { addCount } from "../db";
+import { HttpError, asyncHandler, requireVideo } from "../http";
 
 export const router = Router();
 
@@ -15,23 +16,12 @@ const parseNum = (num: unknown): number | undefined => {
  * access by POST /api/count with body of {id: <id>, num: <num>}
  * num must be an integer.
  */
-router.post("/count", (req, res) => {
-    const id: unknown = req.body.id;
-    const num = parseNum(req.body.num);
-    if (typeof id !== "string" || num === undefined) {
-        res.status(400).send("400 Bad Request");
-        return;
-    }
-    if (!getVideo(id)) {
-        res.status(404).send("404 Not Found");
-        return;
-    }
-    addCount(id, num)
-        .then((count) => {
-            res.json(count);
-        })
-        .catch((error) => {
-            process.stderr.write(error + "\n");
-            res.status(500).send("500 Internal Server Error");
-        });
-});
+router.post(
+    "/count",
+    asyncHandler(async (req, res) => {
+        const num = parseNum(req.body.num);
+        if (num === undefined) throw new HttpError(400, "num must be an integer");
+        const video = requireVideo(req.body.id);
+        res.json(await addCount(video, num));
+    })
+);

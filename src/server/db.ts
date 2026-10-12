@@ -3,10 +3,11 @@ import * as fsp from "fs/promises";
 import jsonfile from "jsonfile";
 import { Video } from "../shared/schema";
 import { DB_FILE, DIRECTORY } from "./config";
+import { log } from "./log";
 
 const loadDatabase = (): { [key: string]: Video } => {
     if (!fs.existsSync(DB_FILE)) {
-        process.stdout.write(DB_FILE + " not found: starting with empty database\n");
+        log.info(DB_FILE + " not found: starting with empty database");
         return {};
     }
     const db: { [key: string]: Video } = jsonfile.readFileSync(DB_FILE);
@@ -45,7 +46,7 @@ export const saveDatabase = (): Promise<boolean> => {
                 await fsp.rename(DB_FILE + ".tmp", DB_FILE);
                 ok = true;
             } catch (error) {
-                process.stderr.write("saveDatabase: " + error + "\n");
+                log.error("saveDatabase", error);
                 ok = false;
             }
         } while (saveAgain);
@@ -85,38 +86,30 @@ export const getVideos = (search: string, filter?: string[]) => {
     return videos;
 };
 
-export async function addCount(id: string, num: number): Promise<number> {
-    if (!getVideo(id)) {
-        process.stderr.write("addCount: id not found\n");
-        return -1;
-    }
-    const counter = (database[id].counter += num);
+/** adds num to the video's counter and returns the new counter. */
+export async function addCount(video: Video, num: number): Promise<number> {
+    video.counter += num;
     await saveDatabase();
-    return counter;
+    return video.counter;
 }
 
 /**
  * deletes the title's folder from disk and its entry from the database.
- * the id must exist. rejects if the folder can't be deleted, in which case
- * the entry is kept.
+ * rejects if the folder can't be deleted, in which case the entry is kept.
  */
-export async function deleteTitle(id: string): Promise<void> {
-    const { source, title } = database[id];
+export async function deleteTitle(video: Video): Promise<void> {
+    const { id, source, title } = video;
     await fsp.rm([DIRECTORY, source, title].join("/"), {
         recursive: true,
         force: true,
     });
     delete database[id];
-    process.stdout.write("delete complete\n");
+    log.info(`deleted ${source}/${title}`);
     await saveDatabase();
 }
 
-export async function updateTags(id: string, tags: string[]): Promise<boolean> {
-    if (!getVideo(id)) {
-        process.stderr.write("updateTags: id not found\n");
-        return false;
-    }
-    database[id].tags = tags;
+/** replaces the video's tags. */
+export async function updateTags(video: Video, tags: string[]): Promise<void> {
+    video.tags = tags;
     await saveDatabase();
-    return true;
 }

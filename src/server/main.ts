@@ -6,6 +6,7 @@ import express from "express";
 import * as path from "path";
 import { app, start } from "./app";
 import { PORT } from "./config";
+import { log } from "./log";
 
 const frontendFiles = path.join(process.cwd(), "dist");
 app.use(express.static(frontendFiles));
@@ -13,6 +14,6 @@ app.get("/*", (_, res) => {
     res.sendFile(path.join(frontendFiles, "index.html"));
 });
 app.listen(PORT, () => {
-    process.stdout.write(`listening on http://localhost:${PORT}\n`);
+    log.info(`listening on http://localhost:${PORT}`);
 });
 start();

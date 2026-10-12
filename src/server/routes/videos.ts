@@ -1,7 +1,8 @@
 import { Router } from "express";
 import * as path from "path";
 import { DIRECTORY } from "../config";
-import { deleteTitle, getVideo, getVideos } from "../db";
+import { deleteTitle, getVideos } from "../db";
+import { HttpError, asyncHandler, requireVideo } from "../http";
 
 export const router = Router();
 
@@ -22,12 +23,7 @@ router.get("/videos", (req, res) => {
  * returns 404 if id not found.
  */
 router.get("/videos/id/:id", (req, res) => {
-    const video = getVideo(req.params.id);
-    if (!video) {
-        res.status(404).end("404 Not Found");
-        return;
-    }
-    res.json(video);
+    res.json(requireVideo(req.params.id));
 });
 
 /**
@@ -36,21 +32,13 @@ router.get("/videos/id/:id", (req, res) => {
  * access by DELETE /api/videos/id/<id>
  * returns 404 if id not found.
  */
-router.delete("/videos/id/:id", (req, res) => {
-    const id = req.params.id;
-    if (!getVideo(id)) {
-        res.status(404).send("404 Not Found");
-        return;
-    }
-    deleteTitle(id)
-        .then(() => {
-            res.status(200).send("200 OK");
-        })
-        .catch((error) => {
-            process.stderr.write("DELETE /api/videos/id: " + error + "\n");
-            res.status(500).send("500 Internal Server Error");
-        });
-});
+router.delete(
+    "/videos/id/:id",
+    asyncHandler(async (req, res) => {
+        await deleteTitle(requireVideo(req.params.id));
+        res.status(200).send("200 OK");
+    })
+);
 
 /**
  * GET list of sources in the database.
@@ -68,12 +56,8 @@ router.get("/sources", (req, res) => {
  * access by /api/thumbnail/<id>
  * returns 404 if id not found or the title has no thumbnail.
  */
-router.get("/thumbnail/:id", (req, res) => {
-    const video = getVideo(req.params.id);
-    if (!video) {
-        res.status(404).send("404 Not Found");
-        return;
-    }
+router.get("/thumbnail/:id", (req, res, next) => {
+    const video = requireVideo(req.params.id);
     const thumbnail = path.resolve(
         DIRECTORY,
         video.source,
@@ -86,10 +70,9 @@ router.get("/thumbnail/:id", (req, res) => {
         // headers are already sent if the client went away mid-transfer
         if (!error || res.headersSent) return;
         if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-            res.status(404).send("404 Not Found");
+            next(new HttpError(404));
             return;
         }
-        process.stderr.write("thumbnail: " + error + "\n");
-        res.status(500).send("500 Internal Server Error");
+        next(error);
     });
 });

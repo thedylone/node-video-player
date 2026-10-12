@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import { DIRECTORY } from "./config";
 import { database, saveDatabase } from "./db";
 import { ffmpegExists, generateThumbnail } from "./ffmpeg";
+import { log } from "./log";
 
 const addDirToDatabase = async () => {
     const exists = [];
@@ -62,8 +63,8 @@ export const updateDatabase = async () => {
     try {
         const exists = await addDirToDatabase();
         pruneDatabase(exists);
-        if (await saveDatabase()) process.stdout.write("database updated\n");
+        if (await saveDatabase()) log.info("database updated");
     } catch (error) {
-        process.stderr.write("updateDatabase: " + error + "\n");
+        log.error("updateDatabase", error);
     }
 };

@@ -1,9 +1,10 @@
 import FFmpeg from "fluent-ffmpeg";
 import { DIRECTORY, FFMPEG_PATH, FFPROBE_PATH } from "./config";
+import { log } from "./log";
 
 export let ffmpegExists = false;
 if (!FFMPEG_PATH || !FFPROBE_PATH) {
-    process.stderr.write("ffmpeg path not found: thumbnails not generated\n");
+    log.info("ffmpeg path not found: thumbnails not generated");
 } else {
     FFmpeg.setFfmpegPath(FFMPEG_PATH);
     FFmpeg.setFfprobePath(FFPROBE_PATH);
@@ -26,11 +27,9 @@ export const generateThumbnail = (
             },
             thumbnailPath
         )
-        .on("error", (err, stdout, stderr) => {
-            if (err) {
-                process.stderr.write(err.message + "\n");
-                process.stderr.write("stdout:\n" + stdout + "\n");
-                process.stderr.write("stderr:\n" + stderr + "\n");
-            }
+        .on("error", (err: Error, _stdout: string, stderr: string) => {
+            // ffmpeg's output starts with a long banner; the cause is at the end
+            const tail = (stderr ?? "").trim().split("\n").slice(-5).join("\n");
+            log.error(`thumbnail for ${videoPath}: ${err.message}\n${tail}`);
         });
 };
