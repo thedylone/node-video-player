@@ -16,6 +16,20 @@ describe("errors", () => {
         expect(res.body).toEqual({ error: "Not Found" });
     });
 
+    test.each(["/api/count", "/api/tag", "/api/tags"])(
+        "POST %s without a body is a 400",
+        async (path) => {
+            const server = await loadServer();
+            const res = await request(server.app).post(path).expect(400);
+            expect(res.body.error).toEqual(expect.any(String));
+        }
+    );
+
+    test("DELETE /api/tag without a body is a 400", async () => {
+        const server = await loadServer();
+        await request(server.app).delete("/api/tag").expect(400);
+    });
+
     test("a malformed JSON body is a 400 and isn't logged", async () => {
         const server = await loadServer();
         const res = await request(server.app)

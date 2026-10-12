@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as fsp from "fs/promises";
 import * as path from "path";
 import { DIRECTORY } from "../config";
-import { HttpError, asyncHandler, requireVideo } from "../http";
+import { HttpError, requireVideo } from "../http";
 import { log } from "../log";
 
 export const router = Router();
@@ -50,65 +50,62 @@ const parseRange = (
  * access by /api/stream/<id>?index=<index>
  * supports single byte ranges (Range: bytes=<start>-<end> or bytes=-<n>).
  */
-router.get(
-    "/stream/:id",
-    asyncHandler(async (req, res) => {
-        if (req.socket.destroyed) {
-            return;
-        }
-        const data = requireVideo(req.params.id);
-        const indexParam = req.query.index ?? "0";
-        if (typeof indexParam !== "string" || !/^\d+$/.test(indexParam))
-            throw new HttpError(400, "index must be a non-negative integer");
-        const video = data.vids[Number(indexParam)];
-        if (!video) throw new HttpError(404);
-        const videoPath = [DIRECTORY, data.source, data.title, video].join("/");
-        let fileSize: number;
-        try {
-            fileSize = (await fsp.stat(videoPath)).size;
-        } catch (error) {
-            // deleted or moved since the last scan
-            log.error("stream", error);
-            throw new HttpError(404);
-        }
-        const contentType =
-            MIME_TYPES[path.extname(video).toLowerCase()] ??
-            "application/octet-stream";
-        const range = req.headers.range
-            ? parseRange(req.headers.range, fileSize)
-            : undefined;
-        if (range === null) {
-            res.setHeader("Content-Range", `bytes */${fileSize}`);
-            throw new HttpError(416);
-        }
-        let stream: fs.ReadStream;
-        if (range) {
-            const { start, end } = range;
-            const head = {
-                "Content-Range": `bytes ${start}-${end}/${fileSize}`,
-                "Accept-Ranges": "bytes",
-                "Content-Length": end - start + 1,
-                "Content-Type": contentType,
-            };
-            res.writeHead(206, head);
-            stream = fs.createReadStream(videoPath, { start, end });
-        } else {
-            const head = {
-                "Accept-Ranges": "bytes",
-                "Content-Length": fileSize,
-                "Content-Type": contentType,
-            };
-            res.writeHead(200, head);
-            stream = fs.createReadStream(videoPath);
-        }
-        stream.on("error", (error) => {
-            // headers are already sent, so all we can do is end the response
-            log.error("stream", error);
-            res.destroy();
-        });
-        stream.pipe(res);
-        res.on("close", () => {
-            stream.destroy();
-        });
-    })
-);
+router.get("/stream/:id", async (req, res) => {
+    if (req.socket.destroyed) {
+        return;
+    }
+    const data = requireVideo(req.params.id);
+    const indexParam = req.query.index ?? "0";
+    if (typeof indexParam !== "string" || !/^\d+$/.test(indexParam))
+        throw new HttpError(400, "index must be a non-negative integer");
+    const video = data.vids[Number(indexParam)];
+    if (!video) throw new HttpError(404);
+    const videoPath = [DIRECTORY, data.source, data.title, video].join("/");
+    let fileSize: number;
+    try {
+        fileSize = (await fsp.stat(videoPath)).size;
+    } catch (error) {
+        // deleted or moved since the last scan
+        log.error("stream", error);
+        throw new HttpError(404);
+    }
+    const contentType =
+        MIME_TYPES[path.extname(video).toLowerCase()] ??
+        "application/octet-stream";
+    const range = req.headers.range
+        ? parseRange(req.headers.range, fileSize)
+        : undefined;
+    if (range === null) {
+        res.setHeader("Content-Range", `bytes */${fileSize}`);
+        throw new HttpError(416);
+    }
+    let stream: fs.ReadStream;
+    if (range) {
+        const { start, end } = range;
+        const head = {
+            "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+            "Accept-Ranges": "bytes",
+            "Content-Length": end - start + 1,
+            "Content-Type": contentType,
+        };
+        res.writeHead(206, head);
+        stream = fs.createReadStream(videoPath, { start, end });
+    } else {
+        const head = {
+            "Accept-Ranges": "bytes",
+            "Content-Length": fileSize,
+            "Content-Type": contentType,
+        };
+        res.writeHead(200, head);
+        stream = fs.createReadStream(videoPath);
+    }
+    stream.on("error", (error) => {
+        // headers are already sent, so all we can do is end the response
+        log.error("stream", error);
+        res.destroy();
+    });
+    stream.pipe(res);
+    res.on("close", () => {
+        stream.destroy();
+    });
+});

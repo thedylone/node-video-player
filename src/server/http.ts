@@ -1,9 +1,4 @@
-import type {
-    ErrorRequestHandler,
-    NextFunction,
-    Request,
-    Response,
-} from "express";
+import type { ErrorRequestHandler } from "express";
 import { STATUS_CODES } from "http";
 import { Video } from "../shared/schema";
 import { getVideo } from "./db";
@@ -17,16 +12,6 @@ export class HttpError extends Error {
         this.status = status;
     }
 }
-
-/**
- * wraps an async route handler so a rejection reaches the error handler.
- * express 4 only does this for errors thrown synchronously.
- */
-export const asyncHandler =
-    (handler: (req: Request, res: Response) => Promise<void>) =>
-    (req: Request, res: Response, next: NextFunction) => {
-        handler(req, res).catch(next);
-    };
 
 /**
  * returns the video with this id. throws 400 if id is not a string, or 404

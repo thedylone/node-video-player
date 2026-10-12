@@ -2,7 +2,7 @@ import { Router } from "express";
 import * as path from "path";
 import { DIRECTORY } from "../config";
 import { deleteTitle, getVideos } from "../db";
-import { HttpError, asyncHandler, requireVideo } from "../http";
+import { HttpError, requireVideo } from "../http";
 
 export const router = Router();
 
@@ -32,13 +32,10 @@ router.get("/videos/id/:id", (req, res) => {
  * access by DELETE /api/videos/id/<id>
  * returns 404 if id not found.
  */
-router.delete(
-    "/videos/id/:id",
-    asyncHandler(async (req, res) => {
-        await deleteTitle(requireVideo(req.params.id));
-        res.status(200).send("200 OK");
-    })
-);
+router.delete("/videos/id/:id", async (req, res) => {
+    await deleteTitle(requireVideo(req.params.id));
+    res.status(200).send("200 OK");
+});
 
 /**
  * GET list of sources in the database.

@@ -10,10 +10,17 @@ import { log } from "./log";
 
 const frontendFiles = path.join(process.cwd(), "dist");
 app.use(express.static(frontendFiles));
-app.get("/*", (_, res) => {
+// client routes such as /watch/<id> get the app, which routes them itself
+app.get("/{*path}", (_, res) => {
     res.sendFile(path.join(frontendFiles, "index.html"));
 });
-app.listen(PORT, () => {
+app.listen(PORT, (error) => {
+    // e.g. the port is in use. express 5 passes the error here instead of
+    // crashing, so stop rather than keep scanning without serving
+    if (error) {
+        log.error(`can't listen on port ${PORT}`, error);
+        process.exit(1);
+    }
     log.info(`listening on http://localhost:${PORT}`);
 });
 start();

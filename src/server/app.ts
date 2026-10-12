@@ -11,6 +11,12 @@ import { router as videos } from "./routes/videos";
 const api = express.Router();
 api.use(express.json());
 api.use(urlencoded({ extended: false }));
+// express 5 leaves req.body undefined when no parser ran (e.g. a request
+// without a body), and the routes read their fields from it
+api.use((req, _res, next) => {
+    req.body ??= {};
+    next();
+});
 api.use(videos, stream, count, tags);
 // unknown /api paths get a JSON 404 instead of reaching the client routes
 api.use(notFound);
