@@ -75,8 +75,11 @@ hololive/
   `tn.png` to make a new one. Thumbnails are made one at a time. If one fails,
   that video is tried again after 5 minutes, then 10, 20 and so on, up to once
   a day (the wait resets when the server restarts).
-- Renaming a source or title folder creates a new entry, so its count and tags
-  start over.
+- Renaming or moving a title folder keeps its id, count and tags, as long as
+  its video file names stay the same. This is recognised by the file names, so
+  if several titles that moved or disappeared together have the same names
+  (e.g. just `1.mp4`), they can't be told apart and start over. A folder that
+  comes back within 10 minutes of being removed also keeps its count and tags.
 
 ## Running
 
