@@ -15,7 +15,6 @@ export default function express(path: string): Plugin {
     return {
         name: "vite3-plugin-express",
         configureServer: (server) => {
-            process.env["VITE"] = "true";
             let loaded: ServerModule | undefined;
             let stop: (() => void) | undefined;
             const load = async () => {
