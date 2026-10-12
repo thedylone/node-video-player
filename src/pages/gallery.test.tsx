@@ -83,13 +83,13 @@ describe("gallery", () => {
 
     test("says so when nothing matches", async () => {
         renderGallery("/?filter=none");
-        await screen.findByText("no videos found!");
+        await screen.findByText("No titles in these sources");
     });
 
     // P5-02: the filters used to be hidden, so they couldn't be undone
     test("shows the filters when nothing matches", async () => {
         renderGallery("/?filter=none");
-        await screen.findByText("no videos found!");
+        await screen.findByText("No titles in these sources");
         expect(await screen.findByLabelText("films")).toBeTruthy();
     });
 

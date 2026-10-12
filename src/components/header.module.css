@@ -1,24 +1,25 @@
 .root {
+    flex: none;
     height: var(--header-height);
-    background: #202020;
-    position: sticky;
-    top: 0;
-    left: 0;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 1em;
-    z-index: 2;
-    border: 1px solid black;
+    gap: var(--gutter);
+    padding: 0 var(--gutter) 0 0;
+    border-bottom: 1px solid var(--rule);
+    background: var(--bg);
+    position: relative;
+    z-index: 3;
 }
 
-.root > * {
+.home {
     height: 100%;
-    flex-basis: 5em;
-    flex-grow: 1;
+    flex: none;
+    display: flex;
+    align-items: center;
 }
 
-.logo {
+.logo_large,
+.logo_small {
     height: 100%;
 }
 
@@ -27,40 +28,40 @@
 }
 
 .search {
-    height: 3em;
+    flex: 1;
+    /* without this the form can't shrink below its input's natural width */
+    min-width: 0;
+    max-width: 40rem;
     display: flex;
-    flex-basis: 25em;
-    flex-grow: 1;
-    align-items: center;
-    margin: 0 1em;
 }
 
 .search_input {
-    width: 100%;
-    height: 100%;
-    background: black;
-    border: 1px solid black;
-    padding: 0 5px;
+    flex: 1;
+    min-width: 0;
+    height: 2.5rem;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
 }
 
+.search_input::-webkit-search-cancel-button {
+    cursor: pointer;
+}
+
 .search_button {
-    height: 100%;
-    aspect-ratio: 1;
+    height: 2.5rem;
+    padding: 0 0.9rem;
+    margin-left: -1px;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
 }
 
 .sidebar_button {
     display: none;
-    cursor: pointer;
-    height: 100%;
-    background: none;
-    border: none;
+    flex: none;
+    height: 2.5rem;
 }
 
-@media screen and (max-width: 768px) {
+@media (max-width: 800px) {
     .logo_large {
         display: none;
     }
@@ -69,7 +70,19 @@
         display: block;
     }
 
+    .root {
+        gap: 0.75rem;
+    }
+
     .sidebar_button {
-        display: block;
+        display: inline-flex;
+    }
+}
+
+@media (max-width: 420px) {
+    /* the icon is enough when space is short */
+    .sidebar_button {
+        font-size: 0;
+        gap: 0;
     }
 }

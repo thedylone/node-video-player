@@ -1,34 +1,62 @@
+/* a tag in a gallery card: quiet text that searches for it */
+.link {
+    color: var(--muted);
+    font-size: var(--step--1);
+}
+
+.link:hover {
+    color: var(--text);
+    text-decoration: underline;
+}
+
+/* a tag on the watch page, with a button to remove it */
 .tag {
     display: inline-flex;
-    max-width: 8em;
-    flex: 1 0 5em;
+    align-items: stretch;
+    max-width: 100%;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    font-size: var(--step--1);
+}
+
+.name {
+    padding: 0.2rem 0.25rem 0.2rem 0.7rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.name:hover {
+    text-decoration: underline;
+}
+
+.remove {
+    min-height: 0;
+    padding: 0 0.6rem 0 0.4rem;
+    border: none;
+    border-radius: 0 999px 999px 0;
+    background: none;
+    color: var(--muted);
+}
+
+.remove:hover {
+    color: var(--danger);
+}
+
+.adder {
+    display: flex;
+    width: 100%;
 }
 
 .input {
-    overflow: ellipsis;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
 }
 
-.input:read-only {
-    cursor: pointer;
-}
-
-.remove {
-    font-size: 0.5em;
-    cursor: pointer;
-    color: #aaaaaa;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-}
-
-.remove:hover {
-    color: #ffffff;
-}
-
 .add {
+    margin-left: -1px;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
 }

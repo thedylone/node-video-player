@@ -42,7 +42,7 @@ const renderRoute = (element: ReactNode) => {
 describe("TagAdder", () => {
     const setup = async () => {
         const route = renderRoute(<TagAdder id="v1" />);
-        const input = await screen.findByPlaceholderText("add tag");
+        const input = await screen.findByPlaceholderText("Add a tag");
         return { ...route, input: input as HTMLInputElement };
     };
 
@@ -59,18 +59,18 @@ describe("TagAdder", () => {
         expect(input.value).toBe("");
     });
 
-    test("+ adds the tag too", async () => {
+    test("Add adds the tag too", async () => {
         vi.mocked(addTag).mockResolvedValue();
         const { input } = await setup();
         fireEvent.change(input, { target: { value: "heist" } });
-        fireEvent.click(screen.getByText("+"));
+        fireEvent.click(screen.getByRole("button", { name: "Add" }));
         expect(addTag).toHaveBeenCalledWith({ id: "v1", tag: "heist" });
     });
 
     test("doesn't add an empty tag", async () => {
         const { input } = await setup();
         fireEvent.change(input, { target: { value: "   " } });
-        fireEvent.click(screen.getByText("+"));
+        fireEvent.click(screen.getByRole("button", { name: "Add" }));
         fireEvent.keyDown(input, { key: "Enter" });
         expect(addTag).not.toHaveBeenCalled();
         expect(document.activeElement).toBe(input);
@@ -101,7 +101,7 @@ describe("TagAdder suggestions", () => {
     test("suggests the tags in use, except the title's own", async () => {
         vi.mocked(fetchTags).mockResolvedValue(["crime", "heist", "la"]);
         renderRoute(<TagAdder id="v1" tags={["heist"]} />);
-        const input = await screen.findByPlaceholderText("add tag");
+        const input = await screen.findByPlaceholderText("Add a tag");
         expect(fetchTags).not.toHaveBeenCalled();
         fireEvent.focus(input);
         await waitFor(() => expect(options(input)).toEqual(["crime", "la"]));
@@ -110,7 +110,7 @@ describe("TagAdder suggestions", () => {
     test("fetches them again on each focus", async () => {
         vi.mocked(fetchTags).mockResolvedValue(["crime"]);
         renderRoute(<TagAdder id="v1" />);
-        const input = await screen.findByPlaceholderText("add tag");
+        const input = await screen.findByPlaceholderText("Add a tag");
         fireEvent.focus(input);
         await waitFor(() => expect(options(input)).toEqual(["crime"]));
         vi.mocked(fetchTags).mockResolvedValue(["crime", "new"]);
@@ -123,7 +123,7 @@ describe("TagAdder suggestions", () => {
         vi.mocked(fetchTags).mockRejectedValue(new Error("offline"));
         vi.mocked(addTag).mockResolvedValue();
         renderRoute(<TagAdder id="v1" />);
-        const input = await screen.findByPlaceholderText("add tag");
+        const input = await screen.findByPlaceholderText("Add a tag");
         fireEvent.focus(input);
         fireEvent.change(input, { target: { value: "heist" } });
         fireEvent.keyDown(input, { key: "Enter" });
@@ -135,7 +135,7 @@ describe("TagAdder suggestions", () => {
 describe("Tag", () => {
     test("searches for the tag when clicked", async () => {
         const { router } = renderRoute(<Tag id="v1" tag="a b#c" />);
-        fireEvent.click(await screen.findByDisplayValue("a b#c"));
+        fireEvent.click(await screen.findByRole("link", { name: "#a b#c" }));
         await waitFor(() =>
             expect(router.state.location.search).toBe(
                 "?search=" + encodeURIComponent("a b#c")
@@ -143,11 +143,13 @@ describe("Tag", () => {
         );
     });
 
-    test("✕ removes the tag, then reloads", async () => {
+    test("the remove button removes the tag, then reloads", async () => {
         const removed = deferred();
         vi.mocked(removeTag).mockReturnValue(removed.promise);
         const { loader } = renderRoute(<Tag id="v1" tag="heist" />);
-        fireEvent.click(await screen.findByText("✕"));
+        fireEvent.click(
+            await screen.findByRole("button", { name: "Remove tag heist" })
+        );
         expect(removeTag).toHaveBeenCalledWith({ id: "v1", tag: "heist" });
         expect(loader).toHaveBeenCalledTimes(1);
         removed.resolve();

@@ -1,0 +1,14 @@
+.label {
+    display: inline-block;
+    max-width: 100%;
+    padding: 0.05rem 0.45rem;
+    border-radius: 3px;
+    background: oklch(var(--label-bg-l) var(--label-bg-c) var(--hue));
+    color: oklch(var(--label-fg-l) var(--label-fg-c) var(--hue));
+    font-size: var(--step--1);
+    font-weight: 650;
+    line-height: 1.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

@@ -1,19 +1,28 @@
 import { FC, Suspense } from "react";
 import { Form, useSubmit, useNavigation } from "react-router";
 
-const Content: FC<{ children?: React.ReactNode }> = (props) => {
+/**
+ * the page below the header. a form, so the sidebar's controls (sort,
+ * filters, the video picked) change the query string as they change.
+ */
+const Content: FC<{ children?: React.ReactNode; className?: string }> = ({
+    children,
+    className,
+}) => {
     const submit = useSubmit();
     const navigation = useNavigation();
     return (
         <Form
             onChange={(e) => submit(e.currentTarget)}
             className={
-                "content" + (navigation.state === "loading" ? " loading" : "")
+                "content" +
+                (className ? " " + className : "") +
+                (navigation.state === "loading" ? " loading" : "")
             }
             replace
         >
-            <Suspense fallback={<div className="empty">loading...</div>}>
-                {props.children}
+            <Suspense fallback={<p className="notice">Loading…</p>}>
+                {children}
             </Suspense>
         </Form>
     );

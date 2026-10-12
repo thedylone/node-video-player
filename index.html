@@ -4,13 +4,22 @@
         <meta charset="utf-8" />
         <link rel="icon" href="/favicon/favicon.ico" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#000000" />
-        <meta name="description" content="video player" />
+        <meta
+            name="theme-color"
+            content="#121019"
+            media="(prefers-color-scheme: dark)"
+        />
+        <meta
+            name="theme-color"
+            content="#f3f3f6"
+            media="(prefers-color-scheme: light)"
+        />
+        <meta name="description" content="Your video library" />
         <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
         <title>Video Player</title>
     </head>
-    <body class="no-scrollbar">
+    <body>
         <noscript>You need to enable JavaScript to run this app.</noscript>
         <div id="root"></div>
         <script type="module" src="/src/main.tsx"></script>

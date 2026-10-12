@@ -62,7 +62,7 @@ const radio = (name: string) => screen.getByLabelText(name) as HTMLInputElement;
 describe("videos", () => {
     test("plays and checks the video picked by ?index", async () => {
         renderWatch("/watch/v1?index=1");
-        await screen.findByText("Count: 0");
+        await screen.findByText("Not watched yet");
         expect(radio("b.mp4").checked).toBe(true);
         expect(radio("a.mp4").checked).toBe(false);
         expect(document.querySelector("video")!.getAttribute("src")).toBe(
@@ -72,7 +72,7 @@ describe("videos", () => {
 
     test("picking a video changes the URL, and the URL the radio", async () => {
         const { router } = renderWatch();
-        await screen.findByText("Count: 0");
+        await screen.findByText("Not watched yet");
         expect(radio("a.mp4").checked).toBe(true);
         fireEvent.click(radio("b.mp4"));
         await waitFor(() =>
@@ -93,13 +93,15 @@ describe("count", () => {
         const saved = deferred<number>();
         vi.mocked(addCount).mockReturnValue(saved.promise);
         const { loader } = renderWatch();
-        fireEvent.click(await screen.findByText("+1"));
+        fireEvent.click(
+            await screen.findByRole("button", { name: "Count one more watch" })
+        );
         expect(addCount).toHaveBeenCalledWith({ id: "v1", num: 1 });
         await new Promise((resolve) => setTimeout(resolve, 20));
         expect(loader).toHaveBeenCalledTimes(1);
         video.counter = 1;
         saved.resolve(1);
-        await screen.findByText("Count: 1");
+        await screen.findByText("Watched once");
     });
 
     test("shows the right count after quick clicks saved out of order", async () => {
@@ -108,21 +110,27 @@ describe("count", () => {
             .mockReturnValueOnce(saves[0].promise)
             .mockReturnValueOnce(saves[1].promise);
         renderWatch();
-        fireEvent.click(await screen.findByText("+1"));
-        fireEvent.click(screen.getByText("+1"));
+        fireEvent.click(
+            await screen.findByRole("button", { name: "Count one more watch" })
+        );
+        fireEvent.click(
+            screen.getByRole("button", { name: "Count one more watch" })
+        );
         // the second save finishes first: its reload sees only one +1
         video.counter = 1;
         saves[1].resolve(1);
-        await screen.findByText("Count: 1");
+        await screen.findByText("Watched once");
         video.counter = 2;
         saves[0].resolve(2);
-        await screen.findByText("Count: 2");
+        await screen.findByText("Watched 2 times");
     });
 
     test("-1 subtracts", async () => {
         vi.mocked(addCount).mockResolvedValue(-1);
         renderWatch();
-        fireEvent.click(await screen.findByText("-1"));
+        fireEvent.click(
+            await screen.findByRole("button", { name: "Count one watch less" })
+        );
         expect(addCount).toHaveBeenCalledWith({ id: "v1", num: -1 });
     });
 });
@@ -132,7 +140,9 @@ describe("delete", () => {
     test("does nothing if not confirmed", async () => {
         const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
         renderWatch();
-        fireEvent.click(await screen.findByText("delete video"));
+        fireEvent.click(
+            await screen.findByRole("button", { name: "Delete title…" })
+        );
         expect(confirm).toHaveBeenCalledWith(expect.stringContaining("Heat"));
         expect(deleteVideo).not.toHaveBeenCalled();
     });
@@ -142,7 +152,9 @@ describe("delete", () => {
         const deleted = deferred<void>();
         vi.mocked(deleteVideo).mockReturnValue(deleted.promise);
         const { router } = renderWatch();
-        fireEvent.click(await screen.findByText("delete video"));
+        fireEvent.click(
+            await screen.findByRole("button", { name: "Delete title…" })
+        );
         expect(deleteVideo).toHaveBeenCalledWith({ id: "v1" });
         await new Promise((resolve) => setTimeout(resolve, 20));
         expect(router.state.location.pathname).toBe("/watch/v1");
@@ -155,7 +167,9 @@ describe("delete", () => {
         const alert = vi.spyOn(window, "alert").mockImplementation(() => {});
         vi.mocked(deleteVideo).mockRejectedValue(new Error("Not Found"));
         const { router } = renderWatch();
-        fireEvent.click(await screen.findByText("delete video"));
+        fireEvent.click(
+            await screen.findByRole("button", { name: "Delete title…" })
+        );
         await waitFor(() =>
             expect(alert).toHaveBeenCalledWith(
                 expect.stringContaining("Not Found")
@@ -185,11 +199,11 @@ test("a video that fails to load says so", async () => {
     );
     render(<RouterProvider router={router} />);
     // in place of the video and its sidebar, which renders inside it
-    await screen.findByText("error loading video!");
+    await screen.findByText("Couldn't load this title");
 });
 
 test("a title without videos says so", async () => {
     video.vids = [];
     renderWatch();
-    await screen.findByText("no videos found!");
+    await screen.findByText("This title has no videos");
 });

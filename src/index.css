@@ -1,88 +1,148 @@
+/*
+ * design tokens. dark by default, since videos are watched in the dark;
+ * light when the system asks for it.
+ */
 :root {
-    --header-height: 5em;
-    --sidebar-width: 18em;
+    color-scheme: dark;
+    --bg: #121019;
+    --raised: #1b1824;
+    --rule: #2d2938;
+    --text: #ece9f2;
+    --muted: #9d97ab;
+    /* the cyan of the logo: focus and the current selection only */
+    --signal: #45b8e6;
+    --danger: #ef5d61;
+    --screen: #000;
+    /* source labels: lightness and chroma for oklch(), the hue comes from
+       the source's name (see components/source.tsx) */
+    --label-bg-l: 0.33;
+    --label-bg-c: 0.07;
+    --label-fg-l: 0.86;
+    --label-fg-c: 0.11;
+
+    --font:
+        "Archivo Variable", system-ui, "Hiragino Sans", "Yu Gothic UI",
+        "Noto Sans JP", sans-serif;
+    /* type scale, about 1.25 apart */
+    --step--1: 0.8125rem;
+    --step-0: 0.9375rem;
+    --step-1: 1.125rem;
+    --step-2: 1.5rem;
+    --step-4: 2.5rem;
+
+    --header-height: 4rem;
+    --sidebar-width: 17rem;
+    --gutter: 1.5rem;
+    --radius: 6px;
 }
 
-@media screen and (max-width: 840px) {
+@media (prefers-color-scheme: light) {
     :root {
-        --sidebar-width: calc(100% - 5em);
+        color-scheme: light;
+        --bg: #f3f3f6;
+        --raised: #ffffff;
+        --rule: #dddbe3;
+        --text: #1a1822;
+        --muted: #625d6e;
+        --signal: #0b78a8;
+        --danger: #c62f35;
+        --screen: #0d0c12;
+        --label-bg-l: 0.92;
+        --label-bg-c: 0.05;
+        --label-fg-l: 0.42;
+        --label-fg-c: 0.12;
     }
 }
 
-* {
+@media (max-width: 800px) {
+    :root {
+        --gutter: 1rem;
+        --header-height: 3.5rem;
+    }
+}
+
+*,
+*::before,
+*::after {
     box-sizing: border-box;
-    color: #fff;
-    text-decoration: none;
-    transition: all 0.25s ease-in-out;
 }
 
 html {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    background: var(--bg);
 }
 
 body {
     margin: 0;
-    font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-        "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-        sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: var(--step-0);
+    line-height: 1.45;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-size: 16px;
-    background-color: #121212;
-    color: white;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    text-align: center;
-}
-
-code {
-    font-family:
-        source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
 #root {
     height: 100vh;
-    width: 100vw;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
 }
 
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+p {
+    margin: 0;
+}
+
+:focus-visible {
+    outline: 2px solid var(--signal);
+    outline-offset: 2px;
+}
+
+button,
+input,
+select {
+    font: inherit;
+    color: inherit;
+}
+
 button {
     cursor: pointer;
-    border-radius: 8px;
-    padding: 0.5em 1em;
-    background: #2f2f2f;
-    color: #fff;
-    border: 1px solid black;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 1em;
+    gap: 0.4em;
+    min-height: 2.25rem;
+    padding: 0 0.85rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--raised);
+    font-weight: 600;
 }
 
 button:hover {
-    background: #333;
+    border-color: var(--muted);
 }
 
-input {
-    border-radius: 8px;
-    padding: 0.5em 1em;
-    background: #2f2f2f;
-    color: #fff;
-    border: 1px solid black;
+input[type="text"],
+input[type="search"],
+select {
+    min-height: 2.25rem;
+    padding: 0 0.75rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--raised);
 }
 
-input[type="text"] {
-    width: 100%;
-}
-
-input[type="checkbox"],
-input[type="radio"] {
-    width: 1em;
-    height: 1em;
-    margin: 0 1em 0 0;
+input::placeholder {
+    color: var(--muted);
 }
 
 label {
@@ -90,92 +150,357 @@ label {
 }
 
 video {
+    display: block;
     max-width: 100%;
-    max-height: 100%;
-    margin: auto;
 }
 
-.no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
 }
 
-.no-scrollbar::-webkit-scrollbar {
-    display: none;
+/* the page below the header: a main column and, beside it, the sidebar */
+.content {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    transition: opacity 0.2s;
 }
 
-.empty {
-    flex-grow: 1;
+.content.loading {
+    opacity: 0.55;
+    cursor: progress;
+}
+
+.main {
+    flex: 1;
+    min-width: 0;
+    overflow-y: auto;
+    padding: var(--gutter);
+}
+
+/* a message in place of content: empty results, errors, loading */
+.notice {
+    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    gap: 0.5rem;
+    padding: var(--gutter);
+    text-align: center;
+    color: var(--muted);
 }
 
-.content {
+.notice h1 {
+    font-size: var(--step-2);
+    font-stretch: 75%;
+    font-weight: 800;
+    color: var(--text);
+}
+
+.notice p {
+    max-width: 34rem;
+}
+
+.notice a {
+    color: var(--signal);
+    font-weight: 600;
+}
+
+.notice code {
+    color: var(--text);
+}
+
+/* section headings in the sidebar */
+.heading {
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+}
+
+.tabular {
+    font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition: none !important;
+    }
+}
+
+/* the gallery */
+.summary {
     display: flex;
-    flex-grow: 1;
-    align-self: stretch;
-    overflow: hidden;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 0.75rem;
+    margin-bottom: 1.25rem;
+    color: var(--muted);
+}
+
+.summary a {
+    color: var(--signal);
+    font-weight: 600;
 }
 
 .grid {
-    flex: 1 0 calc(100% - var(--sidebar-width));
     display: grid;
-    /* min() lets a column shrink below 300px on very narrow screens */
-    grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
-    overflow-y: scroll;
-}
-
-.preview {
-    width: 480px;
-    border-radius: 8px;
-}
-
-.flex-col {
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-    width: 100%;
-    gap: 1em;
-}
-
-.flex-row {
-    display: flex;
-    flex-direction: row;
-    gap: 1em;
-    flex-wrap: wrap;
-    width: 100%;
-}
-
-.title {
-    font-size: 1.5em;
-    overflow: hidden;
-    text-align: left;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-}
-
-.subtitle {
-    font-size: 1em;
-    color: #aaaaaa;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.pad-1em {
-    padding: 1em;
-}
-
-.loading {
-    filter: blur(5px) grayscale(0.5) brightness(0.5);
+    /* min() lets a column shrink below 16rem on very narrow screens */
+    grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
+    gap: 2rem 1.25rem;
 }
 
 /* marks the end of the rendered part of the grid, see VideoGrid */
 .grid-end {
     grid-column: 1 / -1;
     height: 1px;
+}
+
+/* sidebar controls */
+.field {
+    display: flex;
+    flex-direction: column;
+}
+
+.field .heading {
+    margin-bottom: 0.5rem;
+}
+
+.choices {
+    margin: 0;
+    padding: 0;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.choices legend {
+    padding: 0;
+}
+
+.choice {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 2.25rem;
+    padding: 0.25rem 0;
+}
+
+.choice span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.choice input {
+    flex: none;
+    width: 1.05rem;
+    height: 1.05rem;
+    margin: 0;
+    accent-color: var(--signal);
+}
+
+/* each source's box in its colour, matching its labels: an outline when
+   off, filled when on */
+.source-choice input {
+    --swatch: oklch(var(--label-fg-l) var(--label-fg-c) var(--hue));
+    appearance: none;
+    border: 2px solid var(--swatch);
+    border-radius: 3px;
+    background: transparent;
+    cursor: pointer;
+}
+
+.source-choice input:checked {
+    background: var(--swatch);
+    box-shadow: inset 0 0 0 2px var(--bg);
+}
+
+/* the watch page */
+.watch-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* the video on black, as large as fits without scrolling past it */
+.screen {
+    display: flex;
+    justify-content: center;
+    background: var(--screen);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.screen video {
+    width: 100%;
+    max-height: calc(100dvh - var(--header-height) - 12rem);
+    aspect-ratio: 16 / 9;
+    object-fit: contain;
+}
+
+.details {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: 0.35rem;
+    max-width: 60rem;
+}
+
+.watch-title {
+    font-size: var(--step-4);
+    font-stretch: 68%;
+    font-weight: 850;
+    line-height: 1.05;
+    letter-spacing: -0.005em;
+    overflow-wrap: anywhere;
+}
+
+.watch-part {
+    color: var(--muted);
+}
+
+.watch-count {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin-top: 0.5rem;
+}
+
+.stepper {
+    display: inline-flex;
+}
+
+.stepper button {
+    min-width: 2.75rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.stepper button:first-child {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.stepper button:last-child {
+    margin-left: -1px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* parts are a sequence, so they are numbered */
+.parts {
+    counter-reset: part;
+}
+
+.part {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.45rem 0.6rem;
+    margin: 0 -0.6rem;
+    border-radius: var(--radius);
+    counter-increment: part;
+}
+
+.part::before {
+    content: counter(part);
+    flex: none;
+    min-width: 1.25rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.part span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.part:hover {
+    background: var(--raised);
+}
+
+.part:has(input:checked) {
+    background: var(--raised);
+    box-shadow: inset 3px 0 0 var(--signal);
+}
+
+.part:has(input:checked)::before {
+    color: var(--signal);
+}
+
+.part:has(input:focus-visible) {
+    outline: 2px solid var(--signal);
+}
+
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.tag-list:not(:empty) {
+    margin-bottom: 0.75rem;
+}
+
+.danger-zone {
+    margin-top: auto;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+    color: var(--muted);
+    font-size: var(--step--1);
+}
+
+.danger-zone p {
+    margin-top: 0.5rem;
+}
+
+button.danger {
+    color: var(--danger);
+    background: none;
+    border-color: color-mix(in oklab, var(--danger) 45%, transparent);
+}
+
+button.danger:hover {
+    border-color: var(--danger);
+    background: color-mix(in oklab, var(--danger) 12%, transparent);
+}
+
+@media (max-width: 800px) {
+    /* the details go below the video and the page scrolls as one */
+    .content.watch {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .content.watch .main {
+        flex: none;
+        overflow: visible;
+    }
+
+    .screen {
+        margin: calc(var(--gutter) * -1) calc(var(--gutter) * -1) 0;
+        border-radius: 0;
+    }
+
+    .screen video {
+        max-height: none;
+    }
+
+    .watch-title {
+        font-size: 2rem;
+    }
+
+    .danger-zone {
+        margin-top: 0;
+    }
 }

@@ -13,7 +13,7 @@ const renderHeader = (url = "/") => {
 };
 
 const search = (term: string) => {
-    const input = screen.getByPlaceholderText("search");
+    const input = screen.getByPlaceholderText("Search titles and tags");
     fireEvent.change(input, { target: { value: term } });
     fireEvent.submit(input.closest("form")!);
 };
