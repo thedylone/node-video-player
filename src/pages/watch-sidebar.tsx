@@ -5,9 +5,9 @@ import {
     useRevalidator,
     useRouteLoaderData,
     useSearchParams,
-} from "react-router-dom";
+} from "react-router";
 import { Video } from "../shared/schema";
-import { addCount, deleteVideo } from "../api";
+import { addCount, deleteVideo, type videoLoader } from "../api";
 import Sidebar from "../components/sidebar";
 import Tag, { TagAdder } from "../components/tag";
 
@@ -84,8 +84,8 @@ const VideoDetails: FC<{ video: Video }> = ({ video }) => {
 };
 
 const WatchSidebar = () => {
-    // loaded once by the parent watch route
-    const data = useRouteLoaderData("watch") as { video: Video };
+    // loaded once by the parent watch route, which renders first
+    const data = useRouteLoaderData<typeof videoLoader>("watch")!;
     return (
         <Sidebar>
             <Await

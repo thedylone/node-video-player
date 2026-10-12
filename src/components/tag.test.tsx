@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ReactNode } from "react";
-import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { createMemoryRouter, RouterProvider } from "react-router";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { addTag, removeTag } from "../api";
 import Tag, { TagAdder } from "./tag";

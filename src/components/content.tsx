@@ -1,5 +1,5 @@
 import { FC, Suspense } from "react";
-import { Form, useSubmit, useNavigation } from "react-router-dom";
+import { Form, useSubmit, useNavigation } from "react-router";
 
 const Content: FC<{ children?: React.ReactNode }> = (props) => {
     const submit = useSubmit();

@@ -1,4 +1,5 @@
-import { useLoaderData, Await } from "react-router-dom";
+import { useLoaderData, Await } from "react-router";
+import type { sourcesLoader } from "../api";
 import Sidebar from "../components/sidebar";
 
 const sourcesToContent = (sources: string[]) => {
@@ -18,7 +19,7 @@ const sourcesToContent = (sources: string[]) => {
 };
 
 const GallerySidebar = () => {
-    const data = useLoaderData() as { sources: string[] };
+    const data = useLoaderData<typeof sourcesLoader>();
     return (
         <Sidebar>
             <Await

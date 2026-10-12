@@ -1,8 +1,5 @@
-import {
-    createBrowserRouter,
-    redirect,
-    RouterProvider,
-} from "react-router-dom";
+import { createBrowserRouter, redirect } from "react-router";
+import { RouterProvider } from "react-router/dom";
 import Root from "./pages/root";
 import ErrorPage from "./pages/error";
 import Gallery from "./pages/gallery";
@@ -28,6 +25,10 @@ const router = createBrowserRouter([
         path: "/",
         element: <Root />,
         errorElement: <ErrorPage />,
+        // shown until the first page's loaders return, which is at once
+        // since they don't await their requests. React Router warns if a
+        // route has none
+        HydrateFallback: () => null,
         children: [
             {
                 // errors below render inside Root, so the header stays

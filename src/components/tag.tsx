@@ -1,7 +1,7 @@
 import { FC, useRef, useState } from "react";
 import { addTag, removeTag } from "../api";
 import styles from "./tag.module.css";
-import { useNavigate, useRevalidator } from "react-router-dom";
+import { useNavigate, useRevalidator } from "react-router";
 
 const Tag: FC<{ id: string; tag: string }> = ({ id, tag }) => {
     const navigate = useNavigate();

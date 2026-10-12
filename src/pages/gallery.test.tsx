@@ -6,7 +6,7 @@ import {
     screen,
     waitFor,
 } from "@testing-library/react";
-import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { Video } from "../shared/schema";
 import Gallery from "./gallery";

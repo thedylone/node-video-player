@@ -1,10 +1,6 @@
 import { FC, useEffect } from "react";
-import {
-    Outlet,
-    useLoaderData,
-    useSearchParams,
-    Await,
-} from "react-router-dom";
+import { Outlet, useLoaderData, useSearchParams, Await } from "react-router";
+import type { videoLoader } from "../api";
 import { Video } from "../shared/schema";
 import Content from "../components/content";
 
@@ -28,7 +24,7 @@ const VideoContent: FC<{ video: Video; index: string }> = ({
 };
 
 const Watch = () => {
-    const data = useLoaderData() as { video: Video };
+    const data = useLoaderData<typeof videoLoader>();
     const index = useSearchParams()[0].get("index") || "0";
     return (
         <Content>

@@ -1,10 +1,6 @@
 import { useEffect } from "react";
-import {
-    Outlet,
-    useLoaderData,
-    useSearchParams,
-    Await,
-} from "react-router-dom";
+import { Outlet, useLoaderData, useSearchParams, Await } from "react-router";
+import type { videosLoader } from "../api";
 import { Video } from "../shared/schema";
 import Content from "../components/content";
 import VideoItem from "../components/video";
@@ -26,7 +22,7 @@ const videosToContent = (videos: Video[]) => {
 };
 
 const Gallery = () => {
-    const data = useLoaderData() as { videos: Video[] };
+    const data = useLoaderData<typeof videosLoader>();
     const search = useSearchParams()[0].get("search");
     useEffect(() => {
         document.title = "Video Player";

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation } from "react-router";
 import Header from "../components/header";
 import { SidebarContext } from "../components/sidebar-context";
 

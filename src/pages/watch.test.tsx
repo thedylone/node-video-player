@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { createMemoryRouter, RouterProvider } from "react-router";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { addCount, deleteVideo } from "../api";
 import { Video } from "../shared/schema";
@@ -161,6 +161,29 @@ describe("delete", () => {
         );
         expect(router.state.location.pathname).toBe("/watch/v1");
     });
+});
+
+test("a video that fails to load says so", async () => {
+    const router = createMemoryRouter(
+        [
+            {
+                path: "/watch/:id",
+                id: "watch",
+                // as videoLoader returns when the request fails
+                loader: () => {
+                    const video = Promise.reject(new Error("Not Found"));
+                    video.catch(() => {});
+                    return { video };
+                },
+                element: <Watch />,
+                children: [{ index: true, element: <WatchSidebar /> }],
+            },
+        ],
+        { initialEntries: ["/watch/nope"] }
+    );
+    render(<RouterProvider router={router} />);
+    // in place of the video and its sidebar, which renders inside it
+    await screen.findByText("error loading video!");
 });
 
 test("a title without videos says so", async () => {

@@ -1,4 +1,4 @@
-import { defer, LoaderFunctionArgs } from "react-router-dom";
+import { LoaderFunctionArgs } from "react-router";
 import { Video } from "../shared/schema";
 
 export const fetchVideos = async ({
@@ -102,17 +102,27 @@ export const removeTag = async ({
     }
 };
 
-export const videosLoader = async ({ request }: { request: Request }) => {
-    const videos = fetchVideos({ request: request });
-    return defer({ videos: videos });
+/**
+ * marks a request returned by a loader as handled, so one that fails before
+ * its <Await> renders isn't reported as an unhandled rejection (defer() used
+ * to do this). <Await> still sees the rejection and shows its errorElement.
+ */
+const handled = <T>(promise: Promise<T>) => {
+    promise.catch(() => {});
+    return promise;
 };
 
-export const videoLoader = async ({ params }: LoaderFunctionArgs) => {
-    const video = fetchVideo(params.id ?? "");
-    return defer({ video: video });
-};
+// the loaders return their requests unawaited, so the page renders at once
+// and each <Await> shows its part when it arrives
 
-export const sourcesLoader = async ({ request }: { request: Request }) => {
-    const sources = fetchSources({ request: request });
-    return defer({ sources: sources });
-};
+export const videosLoader = ({ request }: LoaderFunctionArgs) => ({
+    videos: handled(fetchVideos({ request: request })),
+});
+
+export const videoLoader = ({ params }: LoaderFunctionArgs) => ({
+    video: handled(fetchVideo(params.id ?? "")),
+});
+
+export const sourcesLoader = ({ request }: LoaderFunctionArgs) => ({
+    sources: handled(fetchSources({ request: request })),
+});
