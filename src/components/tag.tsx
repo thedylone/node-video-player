@@ -1,5 +1,5 @@
 import { FC, useRef, useState } from "react";
-import { addTag, removeTag } from "../server/api";
+import { addTag, removeTag } from "../api";
 import styles from "./tag.module.css";
 import { useNavigate, useRevalidator } from "react-router-dom";
 

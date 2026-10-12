@@ -6,8 +6,8 @@ import {
     useRouteLoaderData,
     useSearchParams,
 } from "react-router-dom";
-import { Video } from "../server/schema";
-import { addCount, deleteVideo } from "../server/api";
+import { Video } from "../shared/schema";
+import { addCount, deleteVideo } from "../api";
 import Sidebar from "../components/sidebar";
 import Tag, { TagAdder } from "../components/tag";
 

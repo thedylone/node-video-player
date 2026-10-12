@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Video } from "../server/schema";
+import { Video } from "../shared/schema";
 import Tag from "./tag";
 
 type Timers = {

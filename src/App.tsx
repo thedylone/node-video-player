@@ -9,7 +9,7 @@ import ErrorPage from "./pages/error";
 import Gallery from "./pages/gallery";
 import GallerySidebar from "./pages/gallery-sidebar";
 import Watch from "./pages/watch";
-import { videoLoader, videosLoader, sourcesLoader } from "./server/api";
+import { videoLoader, videosLoader, sourcesLoader } from "./api";
 import WatchSidebar from "./pages/watch-sidebar";
 
 /** redirects old /watch?id=<id>&index=<index> links to /watch/<id> */

@@ -5,7 +5,7 @@ import {
     useSearchParams,
     Await,
 } from "react-router-dom";
-import { Video } from "../server/schema";
+import { Video } from "../shared/schema";
 import Content from "../components/content";
 import VideoItem from "../components/video";
 

@@ -6,7 +6,7 @@ import * as path from "path";
 import jsonfile from "jsonfile";
 import { nanoid } from "nanoid";
 import FFmpeg from "fluent-ffmpeg";
-import { Video } from "./schema";
+import { Video } from "../shared/schema";
 
 dotenv.config({ path: process.cwd() + "/.env" });
 const FFMPEG_PATH = process.env.FFMPEG_PATH;

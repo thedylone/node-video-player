@@ -1,5 +1,5 @@
 import { defer, LoaderFunctionArgs } from "react-router-dom";
-import { Video } from "./schema";
+import { Video } from "../shared/schema";
 
 export const fetchVideos = async ({
     request,
