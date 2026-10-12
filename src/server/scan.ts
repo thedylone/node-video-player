@@ -1,7 +1,9 @@
+import * as fs from "fs";
 import * as fsp from "fs/promises";
 import { nanoid } from "nanoid";
+import * as path from "path";
 import { Video } from "../shared/schema";
-import { DIRECTORY } from "./config";
+import { DB_FILE, DIRECTORY } from "./config";
 import { database, saveDatabase } from "./db";
 import { queueThumbnail } from "./ffmpeg";
 import { isVideo } from "./formats";
@@ -121,16 +123,128 @@ const applyScan = (folders: Folder[]) => {
     }
 };
 
+let scanning: Promise<void> | undefined;
+let scanAgain = false;
+
 /**
  * scans DIRECTORY, updates the database and saves it.
+ * scans don't overlap: calls made while one is running are combined into one
+ * more scan, so an older scan can't undo what a newer one found.
  * never rejects: errors are logged so a failed scan can't crash the server,
  * and nothing is pruned after a failed scan.
  */
-export const updateDatabase = async () => {
-    try {
-        applyScan(await scanDirectory());
-        if (await saveDatabase()) log.info("database updated");
-    } catch (error) {
-        log.error("updateDatabase", error);
+export const updateDatabase = (): Promise<void> => {
+    if (scanning) {
+        scanAgain = true;
+        return scanning;
     }
+    scanning = (async () => {
+        do {
+            scanAgain = false;
+            try {
+                applyScan(await scanDirectory());
+                if (await saveDatabase()) log.info("database updated");
+            } catch (error) {
+                log.error("updateDatabase", error);
+            }
+        } while (scanAgain);
+        scanning = undefined;
+    })();
+    return scanning;
+};
+
+/** how often to check that the watcher works, and to scan without one. */
+const SCAN_INTERVAL = 60 * 1000;
+/** how often to scan anyway while watching, in case a change was missed. */
+const SCAN_FALLBACK = 10 * 60 * 1000;
+/** wait after the last change before scanning, so a file being copied can
+ * finish first (and the scan isn't run once per file). */
+export const WATCH_DELAY = 2000;
+
+/**
+ * whether a change to this file (relative to DIRECTORY) can't change the
+ * database: thumbnails, and the database itself if it is kept in DIRECTORY.
+ * without this, saving after a scan would start the next scan.
+ */
+const ignored = (file: string) => {
+    if (path.basename(file) === "tn.png") return true;
+    const changed = path.resolve(DIRECTORY, file);
+    const db = path.resolve(DB_FILE);
+    return changed === db || changed === db + ".tmp";
+};
+
+/**
+ * scans DIRECTORY now, and again whenever something in it changes. the
+ * folder is watched with fs.watch; when that isn't possible (e.g. DIRECTORY
+ * doesn't exist yet, or a network drive doesn't report changes), it is
+ * scanned every minute instead, and while watching every 10 minutes in case
+ * a change was missed.
+ * returns a function that stops watching and scanning.
+ */
+export const startScanning = () => {
+    let watcher: fs.FSWatcher | undefined;
+    let delay: NodeJS.Timeout | undefined;
+    let lastScan = 0;
+    let warned = false;
+
+    const scan = () => {
+        lastScan = Date.now();
+        return updateDatabase();
+    };
+
+    const watch = () => {
+        try {
+            watcher = fs.watch(
+                DIRECTORY,
+                { recursive: true },
+                (event, file) => {
+                    if (file && ignored(file)) return;
+                    // the database only depends on names, so only "rename"
+                    // (created, deleted or moved) starts a scan. "change" (e.g. a
+                    // file being copied, or a folder whose files changed) only
+                    // puts off a scan that is waiting, until the copy is done
+                    if (event !== "rename" && !delay) return;
+                    clearTimeout(delay);
+                    delay = setTimeout(() => {
+                        delay = undefined;
+                        void scan();
+                    }, WATCH_DELAY);
+                }
+            );
+        } catch (error) {
+            // logged once, not every minute, until watching works again
+            if (!warned) {
+                log.error(
+                    `can't watch ${DIRECTORY}, scanning every minute`,
+                    error
+                );
+            }
+            warned = true;
+            return;
+        }
+        watcher.on("error", (error) => {
+            // e.g. DIRECTORY was deleted. try again on the next interval
+            log.error(`stopped watching ${DIRECTORY}`, error);
+            watcher?.close();
+            watcher = undefined;
+        });
+        if (warned) log.info(`watching ${DIRECTORY} for changes`);
+        warned = false;
+    };
+
+    watch();
+    void scan();
+    const interval = setInterval(() => {
+        // without a watcher, scan every time: also when watching has just
+        // started again, since changes made meanwhile weren't seen
+        const watching = watcher !== undefined;
+        if (!watching) watch();
+        if (!watching || Date.now() - lastScan >= SCAN_FALLBACK) void scan();
+    }, SCAN_INTERVAL);
+    return () => {
+        clearInterval(interval);
+        clearTimeout(delay);
+        watcher?.close();
+        watcher = undefined;
+    };
 };

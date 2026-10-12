@@ -44,6 +44,8 @@ type Options = {
     ffmpeg?: boolean;
     /** sets PASSWORD. */
     password?: string;
+    /** DB_FILE, relative to the temporary folder. default: db.json */
+    dbFile?: string;
 };
 
 /**
@@ -57,11 +59,12 @@ export const loadServer = async ({
     db,
     ffmpeg,
     password,
+    dbFile: dbPath = "db.json",
 }: Options = {}) => {
     const dir = await fsp.mkdtemp(path.join(os.tmpdir(), "video-player-"));
     tempDirs.push(dir);
     const directory = path.join(dir, "videos");
-    const dbFile = path.join(dir, "db.json");
+    const dbFile = path.join(dir, dbPath);
     await fsp.mkdir(directory);
     await writeFiles(directory, files);
     if (db !== undefined) {

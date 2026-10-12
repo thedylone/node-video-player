@@ -4,7 +4,7 @@ import { PASSWORD } from "./config";
 import { clearThumbnailQueue } from "./ffmpeg";
 import { errorHandler, notFound } from "./http";
 import { log } from "./log";
-import { updateDatabase } from "./scan";
+import { startScanning } from "./scan";
 import { router as count } from "./routes/count";
 import { router as stream } from "./routes/stream";
 import { router as tags } from "./routes/tags";
@@ -59,10 +59,10 @@ export const start = () => {
         }, 1000);
         intervals.push(ticker);
     }
-    updateDatabase();
-    intervals.push(setInterval(updateDatabase, 60000));
+    const stopScanning = startScanning();
     return () => {
         intervals.forEach(clearInterval);
+        stopScanning();
         clearThumbnailQueue();
     };
 };

@@ -75,9 +75,14 @@ hololive/
   are, without converting, so the browser has to support the codecs inside:
   H.264 or VP9 video plays in current browsers whatever the container, while
   e.g. HEVC in a `.mkv` or ProRes in a `.mov` may not.
-- The folder is scanned on startup and then every 60 seconds. New titles and new
-  videos show up after the next scan; removed folders are dropped from the
-  database.
+- The folder is scanned on startup and watched for changes: new titles and
+  videos show up, and removed folders are dropped from the database, about two
+  seconds after files stop being added, removed or renamed (a file still being
+  copied isn't scanned halfway). It is also scanned every 10 minutes in case a
+  change was missed, which can happen on network drives and some Docker
+  setups. If the folder can't be watched (e.g. it doesn't exist yet, or Linux's
+  `fs.inotify.max_user_watches` limit is reached), it is scanned every minute
+  instead and watching is tried again each time.
 - If ffmpeg is configured and a title folder has no `tn.png`, a thumbnail is
   made from the middle of its first video and saved there as `tn.png`. Delete
   `tn.png` to make a new one. Thumbnails are made one at a time. If one fails,
