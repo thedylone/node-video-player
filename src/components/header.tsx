@@ -1,13 +1,10 @@
 import { Link, Form, useNavigate } from "react-router-dom";
 import styles from "./header.module.css";
-
-const toggleSidebar = () => {
-    // add "active" class to sidebar
-    document.getElementById("sidebar")?.classList.toggle("active");
-};
+import { useSidebar } from "./sidebar-context";
 
 const Header = () => {
     const navigate = useNavigate();
+    const sidebar = useSidebar();
     return (
         <header className={styles.root}>
             <Link to="/" style={{ textAlign: "left" }}>
@@ -47,7 +44,7 @@ const Header = () => {
             <div style={{ display: "flex", justifyContent: "end" }}>
                 <button
                     className={styles.sidebar_button}
-                    onClick={toggleSidebar}
+                    onClick={sidebar.toggle}
                 >
                     ☰
                 </button>
