@@ -2,7 +2,7 @@ import * as fsp from "fs/promises";
 import { nanoid } from "nanoid";
 import { DIRECTORY } from "./config";
 import { database, saveDatabase } from "./db";
-import { ffmpegExists, generateThumbnail } from "./ffmpeg";
+import { queueThumbnail } from "./ffmpeg";
 import { log } from "./log";
 
 const addDirToDatabase = async () => {
@@ -29,8 +29,7 @@ const addDirToDatabase = async () => {
             const currentId = current.get([source, title].join("/"));
             if (currentId) database[currentId].vids = vids;
             if (!vids.length) continue;
-            if (files.length == vids.length && ffmpegExists)
-                generateThumbnail(source, title, vids[0]);
+            if (!files.includes("tn.png")) queueThumbnail(source, title, vids[0]);
             if (currentId) continue;
             const id = nanoid(12);
             database[id] = {

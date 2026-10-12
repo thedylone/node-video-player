@@ -1,4 +1,5 @@
 import express, { urlencoded } from "express";
+import { clearThumbnailQueue } from "./ffmpeg";
 import { errorHandler, notFound } from "./http";
 import { log } from "./log";
 import { updateDatabase } from "./scan";
@@ -24,8 +25,8 @@ app.use("/api", api);
 
 /**
  * starts the uptime ticker and the database scan.
- * returns a function that stops them, used by the vite dev plugin when it
- * reloads this module.
+ * returns a function that stops them and drops queued thumbnails, used by
+ * the vite dev plugin when it reloads this module.
  */
 export const start = () => {
     log.info("server started");
@@ -48,5 +49,8 @@ export const start = () => {
     }
     updateDatabase();
     intervals.push(setInterval(updateDatabase, 60000));
-    return () => intervals.forEach(clearInterval);
+    return () => {
+        intervals.forEach(clearInterval);
+        clearThumbnailQueue();
+    };
 };

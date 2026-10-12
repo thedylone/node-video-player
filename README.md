@@ -70,8 +70,11 @@ hololive/
 - The folder is scanned on startup and then every 60 seconds. New titles and new
   videos show up after the next scan; removed folders are dropped from the
   database.
-- If ffmpeg is configured and a title folder contains only `.mp4` files, a
-  thumbnail is saved there as `tn.png`. Delete `tn.png` to make a new one.
+- If ffmpeg is configured and a title folder has no `tn.png`, a thumbnail is
+  made from the middle of its first video and saved there as `tn.png`. Delete
+  `tn.png` to make a new one. Thumbnails are made one at a time. If one fails,
+  that video is tried again after 5 minutes, then 10, 20 and so on, up to once
+  a day (the wait resets when the server restarts).
 - Renaming a source or title folder creates a new entry, so its count and tags
   start over.
 
