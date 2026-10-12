@@ -89,6 +89,8 @@ hololive/
 | `npm run build`                              | Type-checks and builds the client into `dist/`.                       |
 | `npm run build:server`                       | Bundles the server into `dist-server/`.                               |
 | `npm start`                                  | Runs the built server, serving `dist/` and the API on `PORT`.         |
+| `npm test`                                   | Runs the tests once (`npm run test:watch` reruns them on changes).    |
+| `npm run typecheck`                          | Type-checks the client, server, tests and config files.               |
 | `npm run lint`                               | Runs ESLint.                                                          |
 | `npm run format`                             | Formats the code with Prettier (`format:check` only checks).          |
 
@@ -100,6 +102,13 @@ npm run build && npm run build:server && npm start
 
 Run these from the repository root: the server looks for `dist/` and `.env`
 in the current folder.
+
+## Tests
+
+Tests use Vitest and sit next to the code as `*.test.ts(x)`. Server tests use
+Supertest against a temporary `DIRECTORY` and `DB_FILE` (your `.env` and
+`videos/` are not touched) and don't need ffmpeg. Client tests use Testing
+Library in jsdom with the API calls mocked.
 
 ## Pages
 

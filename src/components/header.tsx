@@ -23,7 +23,9 @@ const Header = () => {
                 className={styles.search}
                 onSubmit={(e) => {
                     e.preventDefault();
-                    const search = e.currentTarget.search.value;
+                    const search = String(
+                        new FormData(e.currentTarget).get("search") ?? ""
+                    );
                     navigate(
                         search ? `/?search=${encodeURIComponent(search)}` : "/"
                     );
