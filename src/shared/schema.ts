@@ -5,4 +5,6 @@ export interface Video {
     counter: number;
     tags: string[];
     vids: string[];
+    /** when the title folder was created, in ms since 1970. */
+    added: number;
 }

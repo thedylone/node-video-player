@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import {
     addCount,
     fetchSources,
+    fetchTags,
     fetchVideo,
     fetchVideos,
     videoLoader,
@@ -30,10 +31,39 @@ const reply = (body: unknown, status = 200) =>
 const request = (url: string) => new Request("http://localhost" + url);
 
 describe("fetch functions", () => {
-    test("fetchVideos passes the page's query string on", async () => {
+    test("fetchVideos passes the page's search and filters on", async () => {
         reply([]);
-        await fetchVideos({ request: request("/?search=a%20b&filter=x") });
-        expect(fetch).toHaveBeenCalledWith("/api/videos?search=a%20b&filter=x");
+        await fetchVideos({
+            request: request("/?search=a%20b%26c&filter=x&filter=y"),
+        });
+        expect(fetch).toHaveBeenCalledWith(
+            "/api/videos?search=a+b%26c&filter=x&filter=y&sort=added&order=desc"
+        );
+    });
+
+    // P5-02
+    test.each([
+        ["", "sort=added&order=desc"],
+        ["?sort=oldest", "sort=added&order=asc"],
+        ["?sort=name", "sort=name&order=asc"],
+        ["?sort=name-desc", "sort=name&order=desc"],
+        ["?sort=most", "sort=count&order=desc"],
+        ["?sort=least", "sort=count&order=asc"],
+        ["?sort=bogus", "sort=added&order=desc"],
+        ["?sort=__proto__", "sort=added&order=desc"],
+    ])("fetchVideos sends the page's %j as %s", async (page, api) => {
+        reply([]);
+        await fetchVideos({ request: request("/" + page) });
+        expect(fetch).toHaveBeenCalledWith("/api/videos?" + api);
+    });
+
+    // P5-02
+    test("fetchTags returns the tags and rejects when the request fails", async () => {
+        reply(["a", "b"]);
+        expect(await fetchTags()).toEqual(["a", "b"]);
+        expect(fetch).toHaveBeenCalledWith("/api/tags");
+        reply({ error: "oops" }, 500);
+        await expect(fetchTags()).rejects.toThrow();
     });
 
     test("fetchVideos returns [] when the request fails", async () => {

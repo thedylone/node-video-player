@@ -19,7 +19,13 @@ const PRUNE_GRACE = 10 * 60 * 1000;
  */
 const pruned = new Map<string, { video: Video; at: number }>();
 
-type Folder = { source: string; title: string; vids: string[] };
+type Folder = {
+    source: string;
+    title: string;
+    vids: string[];
+    /** when the folder was created, in ms since 1970. */
+    created: number;
+};
 
 /**
  * lists every title folder in DIRECTORY with its videos, and queues
@@ -38,12 +44,15 @@ const scanDirectory = async (): Promise<Folder[]> => {
         for (const title of titles) {
             const titlePath = [sourcePath, title].join("/");
             const files = await fsp.readdir(titlePath);
+            const stats = await fsp.stat(titlePath);
+            // birthtime is 0 where the file system doesn't record it
+            const created = stats.birthtimeMs || stats.mtimeMs;
             const vids = files
                 .filter(isVideo)
                 .sort((a, b) =>
                     a.localeCompare(b, undefined, { numeric: true })
                 );
-            folders.push({ source, title, vids });
+            folders.push({ source, title, vids, created });
             if (vids.length && !files.includes("tn.png"))
                 queueThumbnail(source, title, vids[0]);
         }
@@ -95,6 +104,8 @@ const applyScan = (folders: Folder[]) => {
         if (video) {
             // existing title: refresh its videos, keeping counter and tags
             video.vids = folder.vids;
+            // saved before titles had a date
+            video.added ??= folder.created;
             found.add(video.id);
         } else if (folder.vids.length) {
             added.push(folder);
@@ -104,17 +115,32 @@ const applyScan = (folders: Folder[]) => {
     const recent = Array.from(pruned.values(), (x) => x.video);
     const moved = matchMoved(added, [...missing, ...recent]);
     for (const folder of added) {
-        const { source, title, vids } = folder;
+        const { source, title, vids, created } = folder;
         const old = moved.get(folder);
         if (old) {
             log.info(`${old.source}/${old.title} moved to ${source}/${title}`);
-            database[old.id] = { ...old, source, title, vids };
+            database[old.id] = {
+                ...old,
+                source,
+                title,
+                vids,
+                // keeps the date it was first added
+                added: old.added ?? created,
+            };
             pruned.delete(old.id);
             found.add(old.id);
             continue;
         }
         const id = nanoid(12);
-        database[id] = { id, title, source, counter: 0, tags: [], vids };
+        database[id] = {
+            id,
+            title,
+            source,
+            counter: 0,
+            tags: [],
+            vids,
+            added: created,
+        };
     }
     for (const video of missing) {
         if (found.has(video.id)) continue;

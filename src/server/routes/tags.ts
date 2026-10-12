@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { updateTags } from "../db";
+import { getTags, updateTags } from "../db";
 import { HttpError, requireVideo } from "../http";
 
 export const router = Router();
@@ -9,6 +9,14 @@ const parseTag = (tag: unknown): string | undefined => {
     if (typeof tag !== "string") return undefined;
     return tag.trim() || undefined;
 };
+
+/**
+ * GET every tag in use, the most used first.
+ * access by /api/tags
+ */
+router.get("/tags", (_req, res) => {
+    res.json(getTags());
+});
 
 /**
  * POST replaces the title's tags.

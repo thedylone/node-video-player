@@ -140,3 +140,19 @@ describe("POST /api/tags", () => {
             .expect(404);
     });
 });
+
+// P5-02
+describe("GET /api/tags", () => {
+    test("lists every tag once, the most used first, then by name", async () => {
+        server.byTitle("Heat").tags = ["crime", "la", "mann"];
+        server.byTitle("Ronin").tags = ["paris", "mann", "car chase"];
+        const res = await request(server.app).get("/api/tags").expect(200);
+        expect(res.body).toEqual(["mann", "car chase", "crime", "la", "paris"]);
+    });
+
+    test("is empty without tags", async () => {
+        server.byTitle("Heat").tags = [];
+        const res = await request(server.app).get("/api/tags").expect(200);
+        expect(res.body).toEqual([]);
+    });
+});

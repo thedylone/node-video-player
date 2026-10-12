@@ -3,13 +3,14 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ReactNode } from "react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { addTag, removeTag } from "../api";
+import { addTag, fetchTags, removeTag } from "../api";
 import Tag, { TagAdder } from "./tag";
 
 vi.mock("../api");
 
 beforeEach(() => {
     vi.resetAllMocks();
+    vi.mocked(fetchTags).mockResolvedValue([]);
 });
 
 /** a promise the test resolves, standing in for a slow request. */
@@ -86,6 +87,48 @@ describe("TagAdder", () => {
         expect(loader).toHaveBeenCalledTimes(1);
         saved.resolve();
         await waitFor(() => expect(loader).toHaveBeenCalledTimes(2));
+    });
+});
+
+// P5-02
+describe("TagAdder suggestions", () => {
+    const options = (input: HTMLElement) =>
+        Array.from(
+            document.getElementById(input.getAttribute("list")!)!.children,
+            (option) => (option as HTMLOptionElement).value
+        );
+
+    test("suggests the tags in use, except the title's own", async () => {
+        vi.mocked(fetchTags).mockResolvedValue(["crime", "heist", "la"]);
+        renderRoute(<TagAdder id="v1" tags={["heist"]} />);
+        const input = await screen.findByPlaceholderText("add tag");
+        expect(fetchTags).not.toHaveBeenCalled();
+        fireEvent.focus(input);
+        await waitFor(() => expect(options(input)).toEqual(["crime", "la"]));
+    });
+
+    test("fetches them again on each focus", async () => {
+        vi.mocked(fetchTags).mockResolvedValue(["crime"]);
+        renderRoute(<TagAdder id="v1" />);
+        const input = await screen.findByPlaceholderText("add tag");
+        fireEvent.focus(input);
+        await waitFor(() => expect(options(input)).toEqual(["crime"]));
+        vi.mocked(fetchTags).mockResolvedValue(["crime", "new"]);
+        fireEvent.blur(input);
+        fireEvent.focus(input);
+        await waitFor(() => expect(options(input)).toEqual(["crime", "new"]));
+    });
+
+    test("still adds tags when they can't be fetched", async () => {
+        vi.mocked(fetchTags).mockRejectedValue(new Error("offline"));
+        vi.mocked(addTag).mockResolvedValue();
+        renderRoute(<TagAdder id="v1" />);
+        const input = await screen.findByPlaceholderText("add tag");
+        fireEvent.focus(input);
+        fireEvent.change(input, { target: { value: "heist" } });
+        fireEvent.keyDown(input, { key: "Enter" });
+        expect(addTag).toHaveBeenCalledWith({ id: "v1", tag: "heist" });
+        expect(options(input)).toEqual([]);
     });
 });
 

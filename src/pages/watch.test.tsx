@@ -2,7 +2,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { addCount, deleteVideo } from "../api";
+import { addCount, deleteVideo, fetchTags } from "../api";
 import { Video } from "../shared/schema";
 import Watch from "./watch";
 import WatchSidebar from "./watch-sidebar";
@@ -24,6 +24,7 @@ let video: Video;
 
 beforeEach(() => {
     vi.resetAllMocks();
+    vi.mocked(fetchTags).mockResolvedValue([]);
     video = {
         id: "v1",
         title: "Heat",
@@ -31,6 +32,7 @@ beforeEach(() => {
         counter: 0,
         tags: [],
         vids: ["a.mp4", "b.mp4"],
+        added: 0,
     };
 });
 

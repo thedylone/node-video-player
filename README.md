@@ -88,8 +88,10 @@ hololive/
   `tn.png` to make a new one. Thumbnails are made one at a time. If one fails,
   that video is tried again after 5 minutes, then 10, 20 and so on, up to once
   a day (the wait resets when the server restarts).
-- Renaming or moving a title folder keeps its id, count and tags, as long as
-  its video file names stay the same. This is recognised by the file names, so
+- A title's date added is when its folder was created (the folder's
+  modification time where the file system doesn't record creation).
+- Renaming or moving a title folder keeps its id, count, tags and date added,
+  as long as its video file names stay the same. This is recognised by the file names, so
   if several titles that moved or disappeared together have the same names
   (e.g. just `1.mp4`), they can't be told apart and start over. A folder that
   comes back within 10 minutes of being removed also keeps its count and tags.
@@ -173,13 +175,15 @@ checks the running container.
 
 ## Pages
 
-| Path                                | Page                                                        |
-| ----------------------------------- | ----------------------------------------------------------- |
-| `/`                                 | Gallery of every title                                      |
-| `/?search=<term>&filter=<source>`   | Gallery filtered by a search term and/or sources            |
-| `/watch/<id>?index=<n>`             | Watch page for a title, playing its `n`th video (default 0) |
+| Path                                          | Page                                                        |
+| --------------------------------------------- | ----------------------------------------------------------- |
+| `/`                                           | Gallery of every title, newest first                        |
+| `/?search=<term>&filter=<source>&sort=<sort>` | Gallery filtered by a search term and/or sources, sorted    |
+| `/watch/<id>?index=<n>`                       | Watch page for a title, playing its `n`th video (default 0) |
 
-The search matches title names and tags, ignoring case.
+The search matches title names and tags, ignoring case. `sort` is `newest`
+(default), `oldest`, `name`, `name-desc`, `most` or `least` (watched). The
+gallery shows 24 titles at first and adds more as you scroll.
 
 ## API
 
@@ -193,6 +197,7 @@ A title is returned as:
     counter: number;
     tags: string[];
     vids: string[];  // video file names in the title folder
+    added: number;   // when the title folder was created, in ms since 1970
 }
 ```
 
@@ -203,13 +208,14 @@ requests return `401`, and changes sent from another site `403`. Errors are sent
 
 | Method   | Path                    | Description                                                                                                   |
 | -------- | ----------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `GET`    | `/api/videos`           | List titles. Optional `search=<term>` and `filter=<source>` (repeat it or separate sources with commas).      |
+| `GET`    | `/api/videos`           | List titles. Optional `search=<term>` and `filter=<source>` (repeat it or separate sources with commas). `sort=added\|name\|count` (default `added`) and `order=asc\|desc` (default newest, A to Z and most watched first). |
 | `GET`    | `/api/videos/id/<id>`   | Get one title.                                                                                                |
 | `DELETE` | `/api/videos/id/<id>`   | Delete the title's folder **from disk** and remove it from the database.                                      |
 | `GET`    | `/api/sources`          | List source names. With `search=<term>`, only sources that have matching titles.                              |
 | `GET`    | `/api/stream/<id>`      | Stream a video. `index=<n>` picks the file (default 0). Supports single `Range` requests (`206`, `416`).      |
 | `GET`    | `/api/thumbnail/<id>`   | The title's `tn.png`.                                                                                         |
 | `POST`   | `/api/count`            | `{ "id", "num" }`: add the integer `num` (may be negative) to the counter. Returns the new counter.           |
+| `GET`    | `/api/tags`             | List every tag in use, the most used first.                                                                   |
 | `POST`   | `/api/tags`             | `{ "id", "tags" }`: replace the tags. Tags are trimmed; empty and duplicate ones are dropped.                 |
 | `POST`   | `/api/tag`              | `{ "id", "tag" }`: add a tag (a non-empty string, trimmed).                                                   |
 | `DELETE` | `/api/tag`              | `{ "id", "tag" }`: remove a tag.                                                                              |

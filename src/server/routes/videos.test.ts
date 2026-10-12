@@ -57,6 +57,77 @@ describe("GET /api/videos", () => {
     });
 });
 
+// P5-02
+describe("GET /api/videos sorting", () => {
+    beforeEach(() => {
+        const set = (title: string, counter: number, added: number) =>
+            Object.assign(server.byTitle(title), { counter, added });
+        set("Bluey", 5, 3000);
+        set("Cowboy Bebop", 0, 1000);
+        set("Heat", 9, 2000);
+        set("Mob Psycho", 5, 4000);
+    });
+
+    const order = async (query: string) => {
+        const res = await request(server.app)
+            .get("/api/videos" + query)
+            .expect(200);
+        return (res.body as Video[]).map((x) => x.title);
+    };
+
+    test.each([
+        ["", ["Mob Psycho", "Bluey", "Heat", "Cowboy Bebop"]],
+        ["?sort=added", ["Mob Psycho", "Bluey", "Heat", "Cowboy Bebop"]],
+        [
+            "?sort=added&order=asc",
+            ["Cowboy Bebop", "Heat", "Bluey", "Mob Psycho"],
+        ],
+        ["?sort=name", ["Bluey", "Cowboy Bebop", "Heat", "Mob Psycho"]],
+        [
+            "?sort=name&order=desc",
+            ["Mob Psycho", "Heat", "Cowboy Bebop", "Bluey"],
+        ],
+        // ties (Bluey and Mob Psycho) by name
+        ["?sort=count", ["Heat", "Bluey", "Mob Psycho", "Cowboy Bebop"]],
+        [
+            "?sort=count&order=asc",
+            ["Cowboy Bebop", "Bluey", "Mob Psycho", "Heat"],
+        ],
+    ])("%s sorts as %j", async (query, expected) => {
+        expect(await order(query)).toEqual(expected);
+    });
+
+    test("sorts names in natural order, ignoring case", async () => {
+        const local = await loadServer({
+            files: { "s/b/1.mp4": "", "s/A 10/1.mp4": "", "s/a 2/1.mp4": "" },
+        });
+        await local.updateDatabase();
+        const res = await request(local.app).get("/api/videos?sort=name");
+        expect((res.body as Video[]).map((x) => x.title)).toEqual([
+            "a 2",
+            "A 10",
+            "b",
+        ]);
+    });
+
+    test("combines with a search and a filter", async () => {
+        expect(await order("?sort=count&filter=anime,shows&search=o")).toEqual([
+            "Mob Psycho",
+            "Cowboy Bebop",
+        ]);
+    });
+
+    test.each(["?sort=date", "?sort=__proto__", "?sort=name&order=up"])(
+        "%s is a 400",
+        async (query) => {
+            const res = await request(server.app)
+                .get("/api/videos" + query)
+                .expect(400);
+            expect(res.body.error).toMatch(/^(sort|order) must be/);
+        }
+    );
+});
+
 describe("GET /api/sources", () => {
     test("lists every source", async () => {
         const res = await request(server.app).get("/api/sources").expect(200);
@@ -84,6 +155,7 @@ describe("GET /api/videos/id/:id", () => {
             counter: 0,
             tags: ["Crime", "Mann"],
             vids: ["heat.mp4"],
+            added: expect.any(Number),
         });
     });
 

@@ -86,6 +86,55 @@ export const getVideos = (search: string, filter?: string[]) => {
     return videos;
 };
 
+export type SortKey = "added" | "name" | "count";
+export type SortOrder = "asc" | "desc";
+
+/** the order each key sorts in unless asked otherwise. */
+export const DEFAULT_ORDER: { [key in SortKey]: SortOrder } = {
+    added: "desc",
+    name: "asc",
+    count: "desc",
+};
+
+/** compares titles by name, ignoring case and in natural order (2 < 10). */
+const byName = (a: Video, b: Video) =>
+    a.title.localeCompare(b.title, undefined, {
+        numeric: true,
+        sensitivity: "base",
+    }) || a.id.localeCompare(b.id);
+
+/**
+ * sorts videos in place by the date added, name or count. ties are sorted by
+ * name. titles without a date (not scanned since dates were added) count as
+ * the oldest.
+ */
+export const sortVideos = (
+    videos: Video[],
+    key: SortKey,
+    order: SortOrder = DEFAULT_ORDER[key]
+) => {
+    const sign = order === "asc" ? 1 : -1;
+    const value = (video: Video) =>
+        key === "added" ? (video.added ?? 0) : video.counter;
+    return videos.sort((a, b) => {
+        if (key === "name") return sign * byName(a, b);
+        return sign * (value(a) - value(b)) || byName(a, b);
+    });
+};
+
+/** every tag in use, the most used first, then by name. */
+export const getTags = () => {
+    const counts = new Map<string, number>();
+    for (const video of Object.values(database)) {
+        for (const tag of video.tags) {
+            counts.set(tag, (counts.get(tag) ?? 0) + 1);
+        }
+    }
+    return Array.from(counts)
+        .sort(([a, x], [b, y]) => y - x || a.localeCompare(b))
+        .map(([tag]) => tag);
+};
+
 /** adds num to the video's counter and returns the new counter. */
 export async function addCount(video: Video, num: number): Promise<number> {
     video.counter += num;

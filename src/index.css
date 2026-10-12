@@ -173,3 +173,9 @@ video {
 .loading {
     filter: blur(5px) grayscale(0.5) brightness(0.5);
 }
+
+/* marks the end of the rendered part of the grid, see VideoGrid */
+.grid-end {
+    grid-column: 1 / -1;
+    height: 1px;
+}

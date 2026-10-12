@@ -76,7 +76,7 @@ const VideoDetails: FC<{ video: Video }> = ({ video }) => {
                     {video.tags.map((tag) => (
                         <Tag key={tag} id={video.id} tag={tag} />
                     ))}
-                    <TagAdder id={video.id} />
+                    <TagAdder id={video.id} tags={video.tags} />
                 </div>
             </div>
         </>

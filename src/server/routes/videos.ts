@@ -1,20 +1,40 @@
 import { Router } from "express";
 import * as path from "path";
 import { DIRECTORY } from "../config";
-import { deleteTitle, getVideos } from "../db";
+import {
+    DEFAULT_ORDER,
+    deleteTitle,
+    getVideos,
+    SortKey,
+    SortOrder,
+    sortVideos,
+} from "../db";
 import { HttpError, requireVideo } from "../http";
 
 export const router = Router();
 
+const isSortKey = (key: unknown): key is SortKey =>
+    typeof key === "string" &&
+    Object.prototype.hasOwnProperty.call(DEFAULT_ORDER, key);
+
 /**
  * GET list of videos in the database.
  * filters by source and searches for title and tags.
- * access by /api/videos?filter=<source>&search=<search>
+ * sorts by sort (added, name or count; default added) in order (asc or desc;
+ * default newest, A-Z and most watched first).
+ * access by /api/videos?filter=<source>&search=<search>&sort=<key>&order=<order>
  */
 router.get("/videos", (req, res) => {
     const filter = req.query.filter?.toString().split(",");
     const search = req.query.search?.toString().toLowerCase() ?? "";
-    res.json(getVideos(search, filter));
+    const sort = req.query.sort ?? "added";
+    if (!isSortKey(sort))
+        throw new HttpError(400, "sort must be added, name or count");
+    const order = req.query.order;
+    if (order !== undefined && order !== "asc" && order !== "desc")
+        throw new HttpError(400, "order must be asc or desc");
+    const videos = getVideos(search, filter);
+    res.json(sortVideos(videos, sort, order as SortOrder | undefined));
 });
 
 /**

@@ -1,13 +1,41 @@
 import { LoaderFunctionArgs } from "react-router";
 import { Video } from "../shared/schema";
 
+/** the gallery's sort options (?sort= on the page), as the API's sort and order. */
+export const SORTS = {
+    newest: { label: "Newest", sort: "added", order: "desc" },
+    oldest: { label: "Oldest", sort: "added", order: "asc" },
+    name: { label: "Name, A to Z", sort: "name", order: "asc" },
+    "name-desc": { label: "Name, Z to A", sort: "name", order: "desc" },
+    most: { label: "Most watched", sort: "count", order: "desc" },
+    least: { label: "Least watched", sort: "count", order: "asc" },
+} as const;
+
+export type Sort = keyof typeof SORTS;
+
+/** the page's sort option, or newest if it has none or an unknown one. */
+export const pageSort = (params: URLSearchParams): Sort => {
+    const sort = params.get("sort");
+    return sort && Object.prototype.hasOwnProperty.call(SORTS, sort)
+        ? (sort as Sort)
+        : "newest";
+};
+
 export const fetchVideos = async ({
     request,
 }: {
     request: Request;
 }): Promise<Video[]> => {
-    const url = new URL(request.url);
-    const response = await fetch("/api/videos" + url.search);
+    const params = new URL(request.url).searchParams;
+    const query = new URLSearchParams();
+    const search = params.get("search");
+    if (search) query.set("search", search);
+    for (const filter of params.getAll("filter"))
+        query.append("filter", filter);
+    const { sort, order } = SORTS[pageSort(params)];
+    query.set("sort", sort);
+    query.set("order", order);
+    const response = await fetch("/api/videos?" + query);
     if (!response.ok) return [];
     const videos = await response.json();
     return videos;
@@ -32,6 +60,13 @@ export const fetchSources = async ({
     if (!response.ok) return [];
     const sources = await response.json();
     return sources;
+};
+
+/** every tag in use, the most used first. */
+export const fetchTags = async (): Promise<string[]> => {
+    const response = await fetch("/api/tags");
+    if (!response.ok) throw new Error(response.statusText);
+    return await response.json();
 };
 
 export const addCount = async ({

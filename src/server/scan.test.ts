@@ -267,3 +267,58 @@ describe("renamed and moved folders", () => {
         expect(server.byTitle("t").counter).toBe(0);
     });
 });
+
+// P5-02
+describe("date added", () => {
+    test("is when the title folder was created", async () => {
+        const server = await loadServer({ files: { "s/t/1.mp4": "" } });
+        const stats = fs.statSync(path.join(server.directory, "s/t"));
+        await server.updateDatabase();
+        expect(server.byTitle("t").added).toBe(
+            stats.birthtimeMs || stats.mtimeMs
+        );
+    });
+
+    test("is kept when a title is renamed", async () => {
+        const server = await loadServer({ files: { "s/old/a.mp4": "" } });
+        await server.updateDatabase();
+        const video = server.byTitle("old");
+        video.added = 1234;
+        move(server, "s/old", "s/new");
+        await server.updateDatabase();
+        expect(server.byTitle("new")).toMatchObject({
+            id: video.id,
+            added: 1234,
+        });
+    });
+
+    test("is kept on later scans", async () => {
+        const server = await loadServer({ files: { "s/t/1.mp4": "" } });
+        await server.updateDatabase();
+        server.byTitle("t").added = 1234;
+        await server.updateDatabase();
+        expect(server.byTitle("t").added).toBe(1234);
+    });
+
+    test("is filled in for titles saved before dates", async () => {
+        const server = await loadServer({
+            files: { "s/t/1.mp4": "" },
+            db: {
+                abc: {
+                    id: "abc",
+                    title: "t",
+                    source: "s",
+                    counter: 3,
+                    tags: [],
+                    vids: ["1.mp4"],
+                },
+            },
+        });
+        await server.updateDatabase();
+        expect(server.database.abc.added).toEqual(expect.any(Number));
+        expect(server.database.abc.added).toBeGreaterThan(0);
+        expect((await readDatabase(server.dbFile)).abc.added).toBe(
+            server.database.abc.added
+        );
+    });
+});
