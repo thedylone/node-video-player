@@ -12,6 +12,18 @@ import Watch from "./pages/watch";
 import { videoLoader, videosLoader, sourcesLoader } from "./server/api";
 import WatchSidebar from "./pages/watch-sidebar";
 
+/** redirects old /watch?id=<id>&index=<index> links to /watch/<id> */
+const redirectOldWatchLink = ({ request }: { request: Request }) => {
+    const params = new URL(request.url).searchParams;
+    const id = params.get("id");
+    if (!id) return redirect("/");
+    params.delete("id");
+    const search = params.toString();
+    return redirect(
+        `/watch/${encodeURIComponent(id)}` + (search ? "?" + search : "")
+    );
+};
+
 const router = createBrowserRouter([
     {
         path: "/",
@@ -19,42 +31,35 @@ const router = createBrowserRouter([
         errorElement: <ErrorPage />,
         children: [
             {
+                // errors below render inside Root, so the header stays
                 errorElement: <ErrorPage />,
                 children: [
                     {
-                        path: "/",
                         element: <Gallery />,
-                        errorElement: <ErrorPage />,
                         loader: videosLoader,
                         children: [
                             {
-                                path: "/",
+                                index: true,
                                 element: <GallerySidebar />,
-                                errorElement: <ErrorPage />,
                                 loader: sourcesLoader,
                             },
                         ],
                     },
                     {
-                        path: "/watch/:id",
+                        path: "watch/:id",
                         id: "watch",
                         element: <Watch />,
                         loader: videoLoader,
                         children: [{ index: true, element: <WatchSidebar /> }],
                     },
+                    { path: "watch", loader: redirectOldWatchLink },
                     {
-                        // old links: /watch?id=<id>&index=<index>
-                        path: "/watch",
-                        loader: ({ request }) => {
-                            const params = new URL(request.url).searchParams;
-                            const id = params.get("id");
-                            if (!id) return redirect("/");
-                            params.delete("id");
-                            const search = params.toString();
-                            return redirect(
-                                `/watch/${encodeURIComponent(id)}` +
-                                    (search ? "?" + search : "")
-                            );
+                        path: "*",
+                        loader: () => {
+                            throw new Response("", {
+                                status: 404,
+                                statusText: "Not Found",
+                            });
                         },
                     },
                 ],
