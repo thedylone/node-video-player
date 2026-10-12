@@ -1,9 +1,10 @@
 import { FC } from "react";
 import {
     Await,
-    useLoaderData,
     useNavigate,
     useRevalidator,
+    useRouteLoaderData,
+    useSearchParams,
 } from "react-router-dom";
 import { Video } from "../server/schema";
 import { addCount, deleteVideo } from "../server/api";
@@ -13,6 +14,7 @@ import Tag, { TagAdder } from "../components/tag";
 const VideoDetails: FC<{ video: Video }> = ({ video }) => {
     const navigate = useNavigate();
     const revalidator = useRevalidator();
+    const current = Number(useSearchParams()[0].get("index") || 0);
     // reload only after the change is saved, so the reload can't return the
     // old value. a newer reload cancels an older one, so the last one wins.
     const changeCount = async (num: number) => {
@@ -27,14 +29,16 @@ const VideoDetails: FC<{ video: Video }> = ({ video }) => {
             </div>
             <div>
                 <h2>Videos</h2>
-                <div className="flex-col">
+                {/* remount when the index changes (e.g. back button), so the
+                    checked radio follows the URL */}
+                <div className="flex-col" key={current}>
                     {video.vids.map((vid, index) => (
                         <label key={vid}>
                             <input
                                 type="radio"
                                 name="index"
                                 value={index}
-                                defaultChecked={index === 0}
+                                defaultChecked={index === current}
                             />
                             {vid}
                         </label>
@@ -80,7 +84,8 @@ const VideoDetails: FC<{ video: Video }> = ({ video }) => {
 };
 
 const WatchSidebar = () => {
-    const data = useLoaderData() as { video: Video };
+    // loaded once by the parent watch route
+    const data = useRouteLoaderData("watch") as { video: Video };
     return (
         <Sidebar>
             <Await

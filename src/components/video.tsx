@@ -28,7 +28,7 @@ const VideoItem: FC<{ video: Video }> = ({ video }) => {
     };
     return (
         <div className="flex-col pad-1em">
-            <Link className="flex-col" to={`/watch?id=${video.id}`}>
+            <Link className="flex-col" to={`/watch/${video.id}`}>
                 <video
                     src={encodeURI("/api/stream/" + video.id)}
                     poster={encodeURI("/api/thumbnail/" + video.id)}

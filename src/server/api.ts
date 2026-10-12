@@ -1,4 +1,4 @@
-import { defer } from "react-router-dom";
+import { defer, LoaderFunctionArgs } from "react-router-dom";
 import { Video } from "./schema";
 
 export const fetchVideos = async ({
@@ -13,16 +13,10 @@ export const fetchVideos = async ({
     return videos;
 };
 
-export const fetchVideo = async ({
-    request,
-}: {
-    request: Request;
-}): Promise<Video | null> => {
-    const url = new URL(request.url);
-    const response = await fetch(
-        "/api/videos/id/" + url.searchParams.get("id")
-    );
-    if (!response.ok) return null;
+export const fetchVideo = async (id: string): Promise<Video> => {
+    const response = await fetch("/api/videos/id/" + encodeURIComponent(id));
+    // rejecting shows the <Await> errorElement instead of rendering null
+    if (!response.ok) throw new Error(response.statusText);
     const video = await response.json();
     return video;
 };
@@ -113,8 +107,8 @@ export const videosLoader = async ({ request }: { request: Request }) => {
     return defer({ videos: videos });
 };
 
-export const videoLoader = async ({ request }: { request: Request }) => {
-    const video = fetchVideo({ request: request });
+export const videoLoader = async ({ params }: LoaderFunctionArgs) => {
+    const video = fetchVideo(params.id ?? "");
     return defer({ video: video });
 };
 

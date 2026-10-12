@@ -1,12 +1,16 @@
-import { Outlet, useLoaderData, Await } from "react-router-dom";
+import {
+    Outlet,
+    useLoaderData,
+    useSearchParams,
+    Await,
+} from "react-router-dom";
 import { Video } from "../server/schema";
 import Content from "../components/content";
 
-const videoToContent = (video: Video, index: number | string) => {
+const videoToContent = (video: Video, index: string) => {
     document.title = video.title;
     return (
         <>
-            <input type="hidden" name="id" value={video.id} />
             <video
                 src={encodeURI("/api/stream/" + video.id + "?index=" + index)}
                 controls
@@ -19,7 +23,7 @@ const videoToContent = (video: Video, index: number | string) => {
 
 const Watch = () => {
     const data = useLoaderData() as { video: Video };
-    const index = new URLSearchParams(location.search).get("index") || 0;
+    const index = useSearchParams()[0].get("index") || "0";
     return (
         <Content>
             <Await

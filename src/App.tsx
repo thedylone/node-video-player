@@ -1,5 +1,9 @@
 // import React from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+    createBrowserRouter,
+    redirect,
+    RouterProvider,
+} from "react-router-dom";
 import Root from "./pages/root";
 import ErrorPage from "./pages/error";
 import Gallery from "./pages/gallery";
@@ -32,16 +36,26 @@ const router = createBrowserRouter([
                         ],
                     },
                     {
-                        path: "/watch",
+                        path: "/watch/:id",
+                        id: "watch",
                         element: <Watch />,
                         loader: videoLoader,
-                        children: [
-                            {
-                                path: "/watch",
-                                element: <WatchSidebar />,
-                                loader: videoLoader,
-                            },
-                        ],
+                        children: [{ index: true, element: <WatchSidebar /> }],
+                    },
+                    {
+                        // old links: /watch?id=<id>&index=<index>
+                        path: "/watch",
+                        loader: ({ request }) => {
+                            const params = new URL(request.url).searchParams;
+                            const id = params.get("id");
+                            if (!id) return redirect("/");
+                            params.delete("id");
+                            const search = params.toString();
+                            return redirect(
+                                `/watch/${encodeURIComponent(id)}` +
+                                    (search ? "?" + search : "")
+                            );
+                        },
                     },
                 ],
             },
