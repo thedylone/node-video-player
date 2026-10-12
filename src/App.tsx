@@ -55,6 +55,8 @@ const router = createBrowserRouter([
                     { path: "watch", loader: redirectOldWatchLink },
                     {
                         path: "*",
+                        // never rendered: the loader always throws a 404
+                        element: null,
                         loader: () => {
                             throw new Response("", {
                                 status: 404,
