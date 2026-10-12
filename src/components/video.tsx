@@ -1,28 +1,41 @@
-import { FC } from "react";
+import { FC, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Video } from "../server/schema";
 import Tag from "./tag";
 
+type Timers = {
+    start?: ReturnType<typeof setTimeout>;
+    stop?: ReturnType<typeof setTimeout>;
+};
+
 const VideoItem: FC<{ video: Video }> = ({ video }) => {
-    let startPreviewTimeout: NodeJS.Timeout;
-    let stopPreviewTimeout: NodeJS.Timeout;
+    // kept across renders, so a re-render can't lose a running timer
+    const timers = useRef<Timers>({});
+    useEffect(() => {
+        const current = timers.current;
+        // don't start or stop a preview after the item is gone
+        return () => {
+            clearTimeout(current.start);
+            clearTimeout(current.stop);
+        };
+    }, []);
     const startPreview = (
         e: React.MouseEvent<HTMLVideoElement, MouseEvent>
     ) => {
-        const vid = e.target as HTMLVideoElement;
-        startPreviewTimeout = setTimeout(() => {
+        const vid = e.currentTarget;
+        timers.current.start = setTimeout(() => {
             vid.controls = true;
             vid.play();
-            stopPreviewTimeout = setTimeout(() => {
+            timers.current.stop = setTimeout(() => {
                 vid.controls = false;
                 vid.load();
             }, 10000);
         }, 1000);
     };
     const stopPreview = (e: React.MouseEvent<HTMLVideoElement, MouseEvent>) => {
-        clearTimeout(startPreviewTimeout);
-        clearTimeout(stopPreviewTimeout);
-        const vid = e.target as HTMLVideoElement;
+        clearTimeout(timers.current.start);
+        clearTimeout(timers.current.stop);
+        const vid = e.currentTarget;
         vid.controls = false;
         vid.load();
     };
@@ -30,16 +43,13 @@ const VideoItem: FC<{ video: Video }> = ({ video }) => {
         <div className="flex-col pad-1em">
             <Link className="flex-col" to={`/watch/${video.id}`}>
                 <video
+                    className="preview"
                     src={encodeURI("/api/stream/" + video.id)}
                     poster={encodeURI("/api/thumbnail/" + video.id)}
                     muted
                     preload="none"
                     onMouseEnter={startPreview}
                     onMouseLeave={stopPreview}
-                    style={{
-                        borderRadius: "8px",
-                        width: "480px",
-                    }}
                 ></video>
                 <div className="title">{video.title}</div>
             </Link>
