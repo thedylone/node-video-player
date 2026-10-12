@@ -13,18 +13,6 @@ export const fetchVideos = async ({
     return videos;
 };
 
-export const fetchVideosSearch = async ({
-    request,
-}: {
-    request: Request;
-}): Promise<Video[]> => {
-    const url = new URL(request.url);
-    const response = await fetch("/api/videos" + url.pathname + url.search);
-    if (!response.ok) return [];
-    const videos = await response.json();
-    return videos;
-};
-
 export const fetchVideo = async ({
     request,
 }: {
@@ -39,20 +27,14 @@ export const fetchVideo = async ({
     return video;
 };
 
-export const fetchSources = async (): Promise<string[]> => {
-    const response = await fetch("/api/sources");
-    if (!response.ok) return [];
-    const sources = await response.json();
-    return sources;
-};
-
-export const fetchSourcesSearch = async ({
+export const fetchSources = async ({
     request,
 }: {
     request: Request;
 }): Promise<string[]> => {
-    const url = new URL(request.url);
-    const response = await fetch("/api/sources" + url.pathname + url.search);
+    const search = new URL(request.url).searchParams.get("search");
+    const query = search ? "?search=" + encodeURIComponent(search) : "";
+    const response = await fetch("/api/sources" + query);
     if (!response.ok) return [];
     const sources = await response.json();
     return sources;
@@ -131,26 +113,12 @@ export const videosLoader = async ({ request }: { request: Request }) => {
     return defer({ videos: videos });
 };
 
-export const videosSearchLoader = async ({ request }: { request: Request }) => {
-    const videos = fetchVideosSearch({ request: request });
-    return defer({ videos: videos });
-};
-
 export const videoLoader = async ({ request }: { request: Request }) => {
     const video = fetchVideo({ request: request });
     return defer({ video: video });
 };
 
-export const sourcesLoader = async () => {
-    const sources = fetchSources();
-    return defer({ sources: sources });
-};
-
-export const sourcesSearchLoader = async ({
-    request,
-}: {
-    request: Request;
-}) => {
-    const sources = fetchSourcesSearch({ request: request });
+export const sourcesLoader = async ({ request }: { request: Request }) => {
+    const sources = fetchSources({ request: request });
     return defer({ sources: sources });
 };

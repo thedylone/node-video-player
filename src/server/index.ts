@@ -241,10 +241,6 @@ async function updateTags(id: string, tags: string[]): Promise<boolean> {
     return true;
 }
 
-app.get("/api/test", (_req, res) => {
-    res.json({ message: "Hello from server!" });
-});
-
 /**
  * GET list of videos in the database.
  * filters by source and searches for title and tags.
@@ -271,33 +267,13 @@ app.get("/api/videos/id/:id", (req, res) => {
 });
 
 /**
- * GET list of videos in the search results.
- * filters by source and searches for title and tags.
- * access by /api/videos/search/<search>?filter=<source>
- */
-app.get("/api/videos/search/:search", (req, res) => {
-    const search = req.params.search.toLowerCase();
-    const filter = req.query.filter?.toString().split(",");
-    res.json(getVideos(search, filter));
-});
-
-/**
  * GET list of sources in the database.
- * access by /api/sources
- */
-app.get("/api/sources", (_req, res) => {
-    const sources = new Set(Object.values(database).map((x) => x.source));
-    res.json(Array.from(sources));
-});
-
-/**
- * GET list of sources in the search results.
+ * with a search, only sources with matching videos are listed.
  * access by /api/sources?search=<search>
  */
-app.get("/api/sources/search/:search", (req, res) => {
-    const search = req.params.search.toLowerCase();
-    const videos = getVideos(search);
-    const sources = new Set(videos.map((x) => x.source));
+app.get("/api/sources", (req, res) => {
+    const search = req.query.search?.toString().toLowerCase() ?? "";
+    const sources = new Set(getVideos(search).map((x) => x.source));
     res.json(Array.from(sources));
 });
 
@@ -453,8 +429,7 @@ app.post("/api/count", (req, res) => {
     }
     addCount(id, num)
         .then((count) => {
-            res.writeHead(200, { "Content-Type": "text/plain" });
-            res.end(count.toString());
+            res.json(count);
         })
         .catch((error) => {
             process.stderr.write(error + "\n");

@@ -1,4 +1,9 @@
-import { Outlet, useLoaderData, Await } from "react-router-dom";
+import {
+    Outlet,
+    useLoaderData,
+    useSearchParams,
+    Await,
+} from "react-router-dom";
 import { Video } from "../server/schema";
 import Content from "../components/content";
 import VideoItem from "../components/video";
@@ -21,9 +26,12 @@ const videosToContent = (videos: Video[]) => {
 
 const Gallery = () => {
     const data = useLoaderData() as { videos: Video[] };
+    const search = useSearchParams()[0].get("search");
     document.title = "Video Player";
     return (
         <Content>
+            {/* the form replaces the query string, so keep the search in it */}
+            {search && <input type="hidden" name="search" value={search} />}
             <Await
                 resolve={data.videos}
                 errorElement={

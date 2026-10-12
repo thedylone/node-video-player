@@ -27,7 +27,9 @@ const Header = () => {
                 onSubmit={(e) => {
                     e.preventDefault();
                     const search = e.currentTarget.search.value;
-                    if (search) navigate(`/search/${encodeURIComponent(search)}`);
+                    navigate(
+                        search ? `/?search=${encodeURIComponent(search)}` : "/"
+                    );
                 }}
             >
                 <input

@@ -15,7 +15,7 @@ const Tag: FC<{ id: string; tag: string }> = ({ id, tag }) => {
                 title={tag}
                 readOnly
                 onClick={() => {
-                    navigate(`/search/${encodeURIComponent(tag)}`);
+                    navigate(`/?search=${encodeURIComponent(tag)}`);
                 }}
             />
             <button

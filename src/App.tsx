@@ -5,13 +5,7 @@ import ErrorPage from "./pages/error";
 import Gallery from "./pages/gallery";
 import GallerySidebar from "./pages/gallery-sidebar";
 import Watch from "./pages/watch";
-import {
-    videoLoader,
-    videosSearchLoader,
-    videosLoader,
-    sourcesLoader,
-    sourcesSearchLoader,
-} from "./server/api";
+import { videoLoader, videosLoader, sourcesLoader } from "./server/api";
 import WatchSidebar from "./pages/watch-sidebar";
 
 const router = createBrowserRouter([
@@ -34,18 +28,6 @@ const router = createBrowserRouter([
                                 element: <GallerySidebar />,
                                 errorElement: <ErrorPage />,
                                 loader: sourcesLoader,
-                            },
-                        ],
-                    },
-                    {
-                        path: "/search/:query",
-                        element: <Gallery />,
-                        loader: videosSearchLoader,
-                        children: [
-                            {
-                                path: "/search/:query",
-                                element: <GallerySidebar />,
-                                loader: sourcesSearchLoader,
                             },
                         ],
                     },
